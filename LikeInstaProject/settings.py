@@ -42,8 +42,6 @@ INSTALLED_APPS = [
     'rest_framework',
 
     'instagram',
-    'profiles',
-    'posts',
 ]
 
 MIDDLEWARE = [

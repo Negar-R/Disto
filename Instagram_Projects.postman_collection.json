@@ -1,0 +1,284 @@
+{
+	"info": {
+		"_postman_id": "5ccefa87-2322-4ad1-ad2a-412403f376e1",
+		"name": "Instagram_Projects",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "profiles_api",
+			"item": [
+				{
+					"name": "create_profile",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"data\":\r\n    {\r\n        \"username\": \"Arm@n\",\r\n        \"first_name\": \"arman\",\r\n        \"last_name\": \"babaei\"\r\n    },\r\n\"method\": \"create_profile\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/instagram/profile",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"instagram",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_profile",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/instagram/profile/Arm@n",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"instagram",
+								"profile",
+								"Arm@n"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update_profile",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"data\":\r\n    {\r\n        \"username\": \"SarA\",\r\n        \"last_name\": \"gholami\",\r\n        \"first_name\": \"sara\"\r\n    },\r\n\"method\": \"update_profile\",\r\n\"obj_id\": \"600e7d8b9ce5d122e54fb16a\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/instagram/profile",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"instagram",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "follow",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"follower\": \"600fbb7fa684af6cd4ab5abf\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/instagram/follow/600e7d8b9ce5d122e54fb16a",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"instagram",
+								"follow",
+								"600e7d8b9ce5d122e54fb16a"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "posts_api",
+			"item": [
+				{
+					"name": "create_post",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"caption\": \"I wanna try to make a doc using postman\",\r\n    \"tags\": [\"postman\", \"doc\"],\r\n    \"publisher\": \"600fbb7fa684af6cd4ab5abf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/instagram/post",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"instagram",
+								"post"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "see_first_page",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/instagram/page/600e7d8b9ce5d122e54fb16a",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"instagram",
+								"page",
+								"600e7d8b9ce5d122e54fb16a"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "see_first_page",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/instagram/page/600e7d8b9ce5d122e54fb16a",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"instagram",
+										"page",
+										"600e7d8b9ce5d122e54fb16a"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Date",
+									"value": "Tue, 26 Jan 2021 07:00:39 GMT"
+								},
+								{
+									"key": "Server",
+									"value": "WSGIServer/0.2 CPython/3.9.1"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Vary",
+									"value": "Accept, Cookie"
+								},
+								{
+									"key": "Allow",
+									"value": "GET, HEAD, OPTIONS"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Length",
+									"value": "161"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "Referrer-Policy",
+									"value": "same-origin"
+								}
+							],
+							"cookie": [],
+							"body": "[\n    {\n        \"publisher\": \"600fbb7fa684af6cd4ab5abf\",\n        \"image\": null,\n        \"caption\": \"I wanna try to make a doc using postman\",\n        \"tags\": [\n            \"postman\",\n            \"doc\"\n        ],\n        \"comments\": null,\n        \"likes\": null\n    }\n]"
+						}
+					]
+				},
+				{
+					"name": "like_reaction",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"reaction_kind\": \"like\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/instagram/reaction/600fbd3ea684af6cd4ab5ac1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"instagram",
+								"reaction",
+								"600fbd3ea684af6cd4ab5ac1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "comment",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"reaction_kind\": \"comment\",\r\n    \"data\":\r\n    {\r\n        \"comment_post\": \"hope to post more in the feature\",\r\n        \"author_id\": \"600d504d6d377aedf33b06d7\"\r\n    }\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/instagram/reaction/600fbd3ea684af6cd4ab5ac1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"instagram",
+								"reaction",
+								"600fbd3ea684af6cd4ab5ac1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

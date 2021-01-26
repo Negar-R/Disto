@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework_mongoengine',
     'rest_framework',
 
+    'instagram',
     'profiles',
     'posts',
 ]
@@ -97,7 +98,6 @@ MONGO_HOST = 'localhost'
 # MONGO_URI = "mongodb://{}:{}@{}:{}/{}".format(MONGO_USER, MONGO_PASS, MONGO_HOST,
 #                                               MONGO_PORT, MONGO_NAME)
 MONGO_URI = 'mongodb://localhost:27017'
-print("***** ", MONGO_URI)
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators

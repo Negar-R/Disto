@@ -25,8 +25,8 @@ class ProfileAPIView(APIView):
         serializer = ProfileSerializer(data=request.data.get("data"))
         if serializer.is_valid():
             if request.data.get("method") == "create_profile":
-                request.data["date"] = time.time()
-                mongo_client_obj.insert_one_data('profiles', **request.data)
+                request.data["data"]["date"] = time.time()
+                mongo_client_obj.insert_one_data('profiles', **request.data["data"])
                 return Response("Your profile created successfully", status=status.HTTP_201_CREATED)
 
             elif request.data.get("method") == "update_profile":
@@ -138,26 +138,35 @@ class FirstPageAPIView(APIView):
     def get(self, request, owner_id):
         owner_id = ObjectId(owner_id)
         first_page = mongo_client_obj.fetch_data('first_page', 'owner', owner_id)
-        first_page = loads(dumps(first_page))[0]
-        posts = first_page["inclusive_pots"]
-        list_of_post_in_page = []
-        for po in posts:
-            post = mongo_client_obj.fetch_one_data('posts', '_id', po)
+        try:
+            first_page = loads(dumps(first_page))[0]
+            posts = first_page["inclusive_pots"]
+            list_of_post_in_page = []
+            for po in posts:
+                post = mongo_client_obj.fetch_one_data('posts', '_id', po)
 
-            show_post = {}
-            show_post["publisher"] = str(post.get("publisher"))
-            show_post["image"] = post.get("image")
-            show_post["caption"] = post.get("caption")
-            show_post["tags"] = post.get("tags")
-            show_post["comments"] = post.get("comments")
-            show_post["likes"] = post.get("likes")
+                show_post = {}
+                show_post["publisher"] = str(post.get("publisher"))
+                show_post["image"] = post.get("image")
+                show_post["caption"] = post.get("caption")
+                show_post["tags"] = post.get("tags")
+                show_post["comments"] = post.get("comments")
+                show_post["likes"] = post.get("likes")
 
-            list_of_post_in_page.append(show_post)
-        return Response(list_of_post_in_page, status=status.HTTP_200_OK)
+                list_of_post_in_page.append(show_post)
+            return Response(list_of_post_in_page, status=status.HTTP_200_OK)
+        except IndexError:
+            return Response("Empty page", status=status.HTTP_200_OK)
 
 
 @csrf_exempt
 def reactOnPostAPIView(request, post_id):
+    """
+    :param request:
+    :param post_id: id of post that want react(like or comment) on it.
+    :return: message
+    """
+
     if request.method == 'POST':
         body = request.body.decode('utf-8')
         msg = json.loads(body)
@@ -166,7 +175,6 @@ def reactOnPostAPIView(request, post_id):
         collection = mongo_client_obj.mongo_db['posts']
 
         if reaction_kind == "like":
-            print("IN LIKE $$$ ")
             collection.update_one({'_id': post_id},
                                   {"$inc": {'likes': 1}},
                                   upsert=False)
@@ -186,4 +194,3 @@ def reactOnPostAPIView(request, post_id):
                                   upsert=False)
 
             return JsonResponse({"message": "You commented on this post"})
-

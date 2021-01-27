@@ -1,6 +1,6 @@
 from bson import ObjectId
-from django.http import Http404
-from django.shortcuts import render
+from pydantic import ValidationError
+from django.http import Http404, HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -8,7 +8,8 @@ from bson.json_util import dumps, loads
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from LikeInstaProject.mongoClient import mongo_client_obj
-from instagram.serializers import ProfileSerializer, FollowingRelationSerializer, PostSerializer
+from instagram.serializers import ProfileValidator, ProfileBodyRequestValidator, \
+    FollowingRelationSerializer, PostValidator, ReactionKindValidator
 import time
 import json
 
@@ -18,37 +19,51 @@ import json
 # PROFILE VIEWS
 class ProfileAPIView(APIView):
     """
-    Create a profile
+    Create, Update, Get a profile
     """
+
+    def body_constraints(self, body):
+        try:
+            return ProfileBodyRequestValidator(**body)
+        except ValidationError as e:
+            raise ValueError(e.errors())
+
+    def data_constraints(self, data):
+        try:
+            return ProfileValidator(**data)
+        except ValidationError as e:
+            raise ValueError(e.errors())
 
     def post(self, request, format=None):
-        serializer = ProfileSerializer(data=request.data.get("data"))
-        if serializer.is_valid():
-            if request.data.get("method") == "create_profile":
-                request.data["data"]["date"] = time.time()
-                mongo_client_obj.insert_one_data('profiles', **request.data["data"])
-                return Response("Your profile created successfully", status=status.HTTP_201_CREATED)
+        self.body_constraints(request.data)
 
-            elif request.data.get("method") == "update_profile":
-                profile_id = ObjectId(request.data.get("obj_id"))
-                mongo_client_obj.update_one_profile('profiles', '_id', profile_id, **serializer.data)
-                return Response("Your Profile updated successfully", status=status.HTTP_200_OK)
+        if request.data.get("method") == "create_profile":
+            self.data_constraints(request.data.get("new_data"))
+            request.data["new_data"]["date"] = time.time()
+            mongo_client_obj.insert_one_data('profiles', **request.data.get("new_data"))
+            return Response("Your profile created successfully", status=status.HTTP_201_CREATED)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        elif request.data.get("method") == "update_profile":
+            self.data_constraints(request.data.get("new_data"))
+            profile_id = ObjectId(request.data["get_info"]["obj_id"])
+            mongo_client_obj.update_one_profile('profiles', '_id', profile_id,
+                                                **request.data.get("new_data"))
+            return Response("Your Profile updated successfully", status=status.HTTP_200_OK)
 
+        elif request.data.get("method") == "get_profile":
+            try:
+                username = request.data["get_info"]["username"]
+                profile_obj = mongo_client_obj.fetch_one_data('profiles', 'username', username)
 
-class GetProfileAPIViewDetail(APIView):
-    """
-    GET, PUT, DELETE a profile by passing a username in URL
-    """
+                show_profile = {}
+                show_profile["username"] = profile_obj.get("username")
+                show_profile["first_name"] = profile_obj.get("first_name")
+                show_profile["last_name"] = profile_obj.get("last_name")
+                show_profile["picture"] = profile_obj.get("picture")
 
-    def get(self, request, username, format=None):
-        try:
-            profile_obj = mongo_client_obj.fetch_one_data('profiles', 'username', username)
-        except:
-            raise Http404
-        serializer = ProfileSerializer(profile_obj)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+                return Response(show_profile, status=status.HTTP_200_OK)
+            except:
+                raise Http404
 
 
 # POST VIEWS
@@ -78,8 +93,8 @@ class FollowAPIView(APIView):
         if serializer.is_valid():
             following_id = ObjectId(id)
             follower_id = ObjectId(serializer.data.get('follower'))
-            mongo_client_obj.insert_one_data('following_relation', **{'following': following_id,
-                                                                      'follower': follower_id})
+            mongo_client_obj.insert_one_data('follow ing_relation', **{'following': following_id,
+                                                                       'follower': follower_id})
             # increase the number of followers and followings
             collection = mongo_client_obj.mongo_db['profiles']
             collection.update_one({'_id': following_id}, {"$inc": {'number_of_follower': 1}},
@@ -111,10 +126,10 @@ class PostAPIView(APIView):
     """
 
     def post(self, request, format=None):
-        serializer = PostSerializer(data=request.data)
-        if serializer.is_valid():
+        try:
+            PostValidator(**request.data)
             # convert publisher_id string to ObjectId
-            publisher = ObjectId(serializer.data.get('publisher'))
+            publisher = ObjectId(request.data.get('publisher'))
             # create post objects
             request.data["published_date"] = time.time()
             request.data["publisher"] = publisher
@@ -127,7 +142,8 @@ class PostAPIView(APIView):
                 mongo_client_obj.update_first_page('first_page', 'owner', following, post.inserted_id)
             return Response("Your post has been published")
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except ValidationError as e:
+            return Response("invalid input !", status=status.HTTP_200_OK)
 
 
 class FirstPageAPIView(APIView):
@@ -170,27 +186,32 @@ def reactOnPostAPIView(request, post_id):
     if request.method == 'POST':
         body = request.body.decode('utf-8')
         msg = json.loads(body)
-        reaction_kind = msg.get('reaction_kind')
-        post_id = ObjectId(post_id)
-        collection = mongo_client_obj.mongo_db['posts']
+        try:
+            ReactionKindValidator(**msg)
+            reaction_kind = msg.get('reaction_kind')
+            post_id = ObjectId(post_id)
+            collection = mongo_client_obj.mongo_db['posts']
 
-        if reaction_kind == "like":
-            collection.update_one({'_id': post_id},
-                                  {"$inc": {'likes': 1}},
-                                  upsert=False)
-            return JsonResponse({"message": "You like this post"})
+            if reaction_kind == "like":
+                collection.update_one({'_id': post_id},
+                                      {"$inc": {'likes': 1}},
+                                      upsert=False)
+                return JsonResponse({"message": "You like this post"})
 
-        elif reaction_kind == "comment":
-            # create a comment object
-            comment_content = {}
-            comment_content["comment_post"] = msg["data"]["comment_post"]
-            comment_content["author"] = ObjectId(msg["data"]["author_id"])
-            comment_content["date"] = time.time()
-            posted_comment = mongo_client_obj.insert_one_data('comments', **comment_content)
+            elif reaction_kind == "comment":
+                # create a comment object
+                comment_content = {}
+                comment_content["comment_post"] = msg["data"]["comment_post"]
+                comment_content["author"] = ObjectId(msg["data"]["author_id"])
+                comment_content["date"] = time.time()
+                posted_comment = mongo_client_obj.insert_one_data('comments', **comment_content)
 
-            # add posted comment to list of post's comments
-            collection.update_one({'_id': post_id},
-                                  {"$push": {"comments": posted_comment.inserted_id}},
-                                  upsert=False)
+                # add posted comment to list of post's comments
+                collection.update_one({'_id': post_id},
+                                      {"$push": {"comments": posted_comment.inserted_id}},
+                                      upsert=False)
 
-            return JsonResponse({"message": "You commented on this post"})
+                return HttpResponse("You commented on this post", status=status.HTTP_200_OK)
+
+        except ValidationError as e:
+            return HttpResponse("invalid input !", status=status.HTTP_200_OK)

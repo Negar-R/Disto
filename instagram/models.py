@@ -6,6 +6,7 @@ from mongoengine import *
 
 # PROFILE MODEL
 class Profile(Document):
+    _id = ObjectIdField()
     username = StringField(required=True)
     first_name = StringField(required=False)
     last_name = StringField(required=False)
@@ -22,13 +23,22 @@ class FollowingRelation(Document):
 
 # POST MODEL
 class Comment(Document):
+    _id = ObjectIdField()
     comment_post = models.CharField(max_length=150)
+    post_id = ObjectIdField()
     # Profile
     author = ObjectIdField()
     date = IntField()
 
 
+class Like(Document):
+    # Profile
+    author = ObjectIdField()
+    post_id = ObjectIdField()
+
+
 class Post(Document):
+    _id = ObjectIdField()
     image = ImageField()
     caption = StringField()
     tags = ListField(StringField(max_length=30))
@@ -39,6 +49,7 @@ class Post(Document):
 
 
 class FirstPage(Document):
+    _id = ObjectIdField()
     owner = ObjectIdField()
     # Post
     inclusive_pots = ListField(ObjectIdField())

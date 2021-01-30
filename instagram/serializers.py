@@ -31,10 +31,27 @@ class ProfileValidator(BaseModel):
                              'invalid char, valid characters are [a-z] , [A-Z] , [0-9] , [@, #, -, _]')
 
 
-class FollowingRelationSerializer(DocumentSerializer):
-    class Meta:
-        model = FollowingRelation
-        fields = ('follower', )
+class FollowingRelationValidator(BaseModel):
+    following: str
+    follower: str
+
+    @validator('follower')
+    def check_not_to_same(cls, v, values):
+        if v == values["following"]:
+            raise ValueError("should not be same")
+        else:
+            return v
+
+
+class FollowingRelationBodyValidator(BaseModel):
+    method: str
+    data: dict
+
+
+# class FollowingRelationSerializer(DocumentSerializer):
+#     class Meta:
+#         model = FollowingRelation
+#         fields = ('follower', )
 
 
 # POST SERIALIZERS
@@ -45,9 +62,8 @@ class FollowingRelationSerializer(DocumentSerializer):
 
 
 class PostValidator(BaseModel):
-    caption: constr(min_length=5, max_length=100)
+    caption: constr(min_length=5, max_length=100, strip_whitespace=True)
     image: str = None
-    tags: list[str] = None
     publisher: str
 
 

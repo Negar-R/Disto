@@ -6,7 +6,7 @@ urlpatterns = [
     # PROFILE URLS
     path('profile', ProfileAPIView.as_view(), name='profile'),
     # path('profile/<str:username>', GetProfileAPIViewDetail.as_view(), name='get_profile'),
-    path('follow/<str:id>', FollowAPIView.as_view(), name='follow'),
+    path('follow', FollowAPIView.as_view(), name='follow'),
 
     # POST URLS
     path('post', PostAPIView.as_view(), name='post'),

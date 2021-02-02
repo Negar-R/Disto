@@ -1,1 +1,1 @@
-from LikeInstaProject.mongoClient import mongo_client_obj
+from LikeInstaProject.mongo_client import mongo_client_obj

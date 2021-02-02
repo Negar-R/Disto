@@ -1,5 +1,5 @@
 from bson import ObjectId
-from pymongo import MongoClient
+from pymongo import MongoClient, ReturnDocument
 from bson.json_util import dumps, loads
 from LikeInstaProject.settings import MONGO_URI, MONGO_NAME
 from instagram.models import Post, Profile
@@ -31,8 +31,9 @@ class MongoClientClass:
         obj = modelName(**kwargs)
         return obj
 
-    def delete_one_data(self, dbcollection: str, kwargs):
-        self.mongo_collection = self.mongo_db[dbcollection]
+    def delete_one_data(self, modelName, kwargs):
+        db_collection = modelName._get_collection_name()
+        self.mongo_collection = self.mongo_db[db_collection]
         self.mongo_collection.delete_one(kwargs)
 
     def update_data(self, modelName, filter_query, update_query, upsert):
@@ -40,6 +41,7 @@ class MongoClientClass:
         self.mongo_collection = self.mongo_db[db_collection]
         updated_dict = self.mongo_collection.find_one_and_update(filter_query,
                                                                  update_query,
+                                                                 return_document=ReturnDocument.AFTER,
                                                                  upsert=upsert)
         obj = modelName(**updated_dict)
         return obj

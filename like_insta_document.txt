@@ -1,0 +1,262 @@
+** Profile 
+	1. Create Profile :
+		{
+    			"method": "createProfile",
+    			"data":
+    			{
+       				"username": (str, required = True),
+        			"first_name": (str, required = False),
+        			"last_name": (str, required = False),
+        			"picture": (str, required = False),
+    			},
+    			"auth": (str: id of user, required = False),
+    			"ver_api": int
+		}
+
+		{
+    			"status": 200,
+    			"status_info": "ok",
+    			"data": 
+			{
+        			"profile": 
+				{
+            				"id": "6017b75a9359e6dc609e28f4",
+            				"username": "MarYam",
+            				"first_name": "maryam",
+            				"last_name": "satari",
+            				"picture": "maryam.jpg"
+        			}
+    			}
+		}
+
+	2. Update Profile :
+		{
+    			"method": "updateProfile",
+    			"data":
+    			{
+    			        "username": (str, required = True),
+        			"last_name": (str, required = False),
+        			"first_name": (str, required = False),
+        			"picture": (str, required = False),
+    			},
+    			"auth": (str: id of user, required = True),
+    			"ver_api": int
+		}
+
+		{
+    			"status": 200,
+    			"status_info": "ok",
+    			"data": 
+			{
+        			"profile": 
+				{
+            				"id": "6017b75a9359e6dc609e28f4",
+            				"username": "MarYam",
+            				"first_name": "maryam",
+            				"last_name": "satari",
+            				"picture": "maryam.jpg"
+        			}
+    			}
+		}
+	
+	3. Get Profile : 
+		{
+    			"method": "getProfile", 
+    			"data": {
+        				"profile_id": (str, required = True),
+    				},
+    			"auth":  (str: id of user, required = True),
+    			"ver_api": int
+		}
+		{
+    			"status": 200,
+    			"status_info": "ok",
+    			"data": 
+			{
+        			"profile": 
+				{
+            				"id": "6017b75a9359e6dc609e28f4",
+            				"username": "MarYam",
+            				"first_name": "maryam",
+            				"last_name": "satari",
+            				"picture": "maryam.jpg"
+        			}
+    			}
+		}
+
+
+** Post
+	1. Create Post
+		{
+    			"method": "createPost",
+    			"data":
+    			{
+        			"image": (str, required = True),
+        			"caption": (str, required = False)
+    			},
+    			"auth": (str: id of user, required = True),
+    			"ver_api": int
+		}
+		
+		{
+    			"status": 200,
+    			"status_info": "ok",
+    			"data": 
+			{
+        			"post": 
+				{
+            				"id": "6017e636f40cedf28b7c1f5c",
+            				"image": "new_post.jpg",
+            				"caption": "after a long time: #be_happy",
+            				"tags": 
+					[
+                				"#be_happy"
+            				],
+            				"publisher": "600d76be494bf87592ec7444",
+            				"published_date": 1612178998
+        			}
+    			}
+		}
+
+** First Page
+	1. Get First Page 
+		{
+    			"method": "getFirstPage",
+    			"data": {},
+    			"auth": (str: id of user, required = True),
+    			"ver_api": int
+		}
+		[
+    			{
+        			"id": "600eaa5eae21b636a7b521e2",
+        			"publisher": "600d76be494bf87592ec7444",
+        			"image": null,
+        			"caption": "Be successful !",
+        			"tags": 
+				[
+            				"happy",
+            				"success"
+        			],
+        			"published_date": 1611573854
+    			},
+    			{
+        			"id": "600eaaa6ae21b636a7b521e3",
+        			"publisher": "600d76be494bf87592ec7444",
+        			"image": null,
+        			"caption": "test the first page of following",
+        			"tags": 
+				[
+            				"first_page",
+            				"test"
+        			],
+        			"published_date": 1611573926
+    			},
+		]
+
+
+** React
+	1. Comment 
+		{
+    			"method": "postComment",
+    			"data":
+    			{
+        			"post_id": (str: id of post, required = True),
+        			"comment_post": str
+    			},
+    			"auth": (str: id of user, required = True),
+    			"ver_api": int
+		}
+		{
+    			"status": 200,
+    			"status_info": "ok",
+    			"data": 
+			{
+        			"comment": 
+				{
+            				"post_id": "6017e636f40cedf28b7c1f5c",
+            				"comment_post": "waiting for more post",
+            				"author_id": "600d504d6d377aedf33b06d7",
+            				"date": 1612250878
+        			}
+    			}
+		}
+	
+	2. Like 
+		{
+    			"method": "like",
+    			"data":
+    			{
+        			"post_id": (str: id of post, required = True),
+    			},
+    			"auth": (str: id of user, required = True),
+    			"ver_api": int
+		}
+		{
+    			"status": 200,
+    			"status_info": "ok",
+    			"data": 
+			{
+        			"like": 
+				{
+            				"post_id": "6017e636f40cedf28b7c1f5c",
+            				"author": "600d504d6d377aedf33b06d7"
+        			}
+    			}
+		}
+
+
+** Follow
+	1. Start to Follow
+		{
+    			"method": "startToFollow",
+    			"data":
+    			{
+        			"follower": "601548fd2a4a72cf43579344"
+    			},
+    			"auth": "6017aa0c452816f3547b18a7",
+    			"ver_api": 1
+		}
+		{
+    			"status": 200,
+    			"status_info": "ok",
+    			"data":
+			 {
+        			"following_relation": 
+				{
+            				"following_page": 
+					{
+                				"username": "AsmA*",
+                				"number_of_follower": null,
+                				"number_of_following": 2
+            				},
+            				"follower_page": 
+					{
+                				"username": "MarYam",
+                				"number_of_follower": 2,
+                				"number_of_following": null
+            				}
+        			}
+    			}
+		}
+	
+	2. Stop to Follow : just like the above api
+	
+	3. Get Followers list
+		{
+    			"method": "getFollowers",
+    			"data": {},
+    			"auth": "6017aa0c452816f3547b18a7",
+    			"ver_api": 1
+		}
+		{
+    			"status": 200,
+    			"status_info": "ok",
+    			"data": 
+			{
+        			"number_of_followers": 1,
+        			"followers_username": 
+				[
+            				"A*smA"
+        			]
+    			}
+		}

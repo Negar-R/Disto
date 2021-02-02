@@ -1,26 +1,23 @@
+from pydantic.class_validators import Optional
 from rest_framework_mongoengine.serializers import DocumentSerializer
 from pydantic import BaseModel, validator, constr
 from instagram.models import Profile, FollowingRelation, Post
 import re
 
 
+class BodyStructureValidator(BaseModel):
+    method: constr(min_length=2, strip_whitespace=True)
+    data: dict
+    auth: constr(min_length=24, max_length=24, strip_whitespace=True)
+    ver_api: int
+
+
 # PROFILE SERIALIZERS
-# class ProfileSerializer(DocumentSerializer):
-#     class Meta:
-#         model = Profile
-#         fields = ('username', 'last_name', 'first_name', 'picture')
-
-class ProfileBodyRequestValidator(BaseModel):
-    method: str
-    new_data: dict
-    get_info: dict
-
-
 class ProfileValidator(BaseModel):
-    username: str
-    first_name: str = None
-    last_name: str = None
-    picture: str = None
+    username: constr(min_length=5, max_length=100, strip_whitespace=True)
+    first_name: Optional[str]
+    last_name: Optional[str]
+    picture: Optional[str]
 
     @validator('username', allow_reuse=True)
     def check_username_len_and_char(cls, v):
@@ -32,48 +29,19 @@ class ProfileValidator(BaseModel):
 
 
 class FollowingRelationValidator(BaseModel):
-    following: str
     follower: str
-
-    @validator('follower')
-    def check_not_to_same(cls, v, values):
-        if v == values["following"]:
-            raise ValueError("should not be same")
-        else:
-            return v
-
-
-class FollowingRelationBodyValidator(BaseModel):
-    method: str
-    data: dict
-
-
-# class FollowingRelationSerializer(DocumentSerializer):
-#     class Meta:
-#         model = FollowingRelation
-#         fields = ('follower', )
 
 
 # POST SERIALIZERS
-# class PostSerializer(DocumentSerializer):
-#     class Meta:
-#         model = Post
-#         exclude = ('likes', 'comments', 'published_date')
-
-
 class PostValidator(BaseModel):
-    caption: constr(min_length=5, max_length=100, strip_whitespace=True)
-    image: str = None
-    publisher: str
+    image: constr(min_length=5, max_length=100, strip_whitespace=True)
+    caption: Optional[str]
 
 
-class ReactionKindValidator(BaseModel):
-    data: dict = None
-    reaction_kind: str
+class CommentValidator(BaseModel):
+    post_id: constr(min_length=24, max_length=24, strip_whitespace=True)
+    comment_post: constr(min_length=5, max_length=100, strip_whitespace=True)
 
-    @validator('reaction_kind')
-    def check_comment_body(cls, v, values, **kwargs):
-        if v == "comment" and values["data"] is None:
-            raise ValueError('comment should have comment_post and author_id')
-        else:
-            return v
+
+class LikeValidator(BaseModel):
+    post_id: constr(min_length=24, max_length=24, strip_whitespace=True)

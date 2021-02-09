@@ -15,8 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from instagram.views import InstagramAPIView
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('instagram/', include('instagram.urls')),
+    path('main/instagram', InstagramAPIView.as_view(), name='instagram'),
 ]

@@ -11,17 +11,17 @@ class MongoClientClass:
         self.mongo_db = self.mongo_client[MONGO_NAME]
         self.mongo_collection = ""
 
-    def fetch_one_data(self, modelName, query: str, query_param):
+    def fetch_one_data(self, modelName, query: dict):
         db_collection = modelName._get_collection_name()
         self.mongo_collection = self.mongo_db[db_collection]
-        found_dict = self.mongo_collection.find_one({query: query_param})
+        found_dict = self.mongo_collection.find_one(query)
         obj = modelName(**found_dict)
         return obj
 
-    def fetch_data(self, modelName, query: str, query_param):
+    def fetch_data(self, modelName, query: dict):
         db_collection = modelName._get_collection_name()
         self.mongo_collection = self.mongo_db[db_collection]
-        data = dumps(list(self.mongo_collection.find({query: query_param})))
+        data = dumps(list(self.mongo_collection.find(query)))
         return loads(data)
 
     def insert_one_data(self, modelName, kwargs):

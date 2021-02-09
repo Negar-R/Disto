@@ -11,8 +11,9 @@ class Profile(Document):
     first_name = StringField(required=False)
     last_name = StringField(required=False)
     picture = StringField(required=False)
-    number_of_following = IntField(required=False)
-    number_of_follower = IntField(required=False)
+    number_of_following = IntField(required=False, default=0)
+    number_of_follower = IntField(required=False, default=0)
+    number_of_posts = IntField(default=0)
     date_of_join = IntField()
 
     meta = {
@@ -30,13 +31,18 @@ class FollowingRelation(Document):
     }
 
 
+class EmbeddedAuthor(EmbeddedDocument):
+    username = StringField()
+    picture = StringField()
+
+
 # POST MODEL
 class Comment(Document):
     _id = ObjectIdField()
     comment_post = StringField()
     post_id = ObjectIdField()
     # Profile
-    author = ObjectIdField()
+    author = EmbeddedDocumentField(EmbeddedAuthor)
     date = IntField()
 
     meta = {
@@ -47,7 +53,7 @@ class Comment(Document):
 class Like(Document):
     _id = ObjectIdField()
     # Profile
-    author = ObjectIdField()
+    author = EmbeddedDocumentField(EmbeddedAuthor)
     post_id = ObjectIdField()
 
     meta = {
@@ -60,8 +66,7 @@ class Post(Document):
     image = StringField()
     caption = StringField()
     tags = ListField(StringField(max_length=30))
-    likes = IntField()
-    comments = ListField(ObjectIdField())
+    likes = IntField(default=0)
     publisher = ObjectIdField()
     published_date = IntField()
 
@@ -75,6 +80,7 @@ class FirstPage(Document):
     owner = ObjectIdField()
     # Post
     inclusive_pots = ListField(ObjectIdField())
+    inclusive_publishers = ListField(ObjectIdField())
 
     meta = {
         'collection': 'first_page'

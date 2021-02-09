@@ -1,5 +1,4 @@
 from pydantic.class_validators import Optional
-from rest_framework_mongoengine.serializers import DocumentSerializer
 from pydantic import BaseModel, validator, constr
 from instagram.models import Profile, FollowingRelation, Post
 import re
@@ -15,7 +14,7 @@ class BodyStructureValidator(BaseModel):
 # PROFILE SERIALIZERS
 class ProfileValidator(BaseModel):
     username: constr(min_length=5, max_length=100, strip_whitespace=True)
-    first_name: Optional[str]
+    first_name: Optional[constr(min_length=2, max_length=20, strip_whitespace=True)] = None
     last_name: Optional[str]
     picture: Optional[str]
 
@@ -35,7 +34,7 @@ class FollowingRelationValidator(BaseModel):
 # POST SERIALIZERS
 class PostValidator(BaseModel):
     image: constr(min_length=5, max_length=100, strip_whitespace=True)
-    caption: Optional[str]
+    caption: Optional[constr(min_length=2, max_length=200, strip_whitespace=True)]
 
 
 class CommentValidator(BaseModel):
@@ -45,3 +44,7 @@ class CommentValidator(BaseModel):
 
 class LikeValidator(BaseModel):
     post_id: constr(min_length=24, max_length=24, strip_whitespace=True)
+
+
+class PagePostsValidator(BaseModel):
+    profile_id: constr(min_length=24, max_length=24, strip_whitespace=True)

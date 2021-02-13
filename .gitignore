@@ -15,6 +15,7 @@ htmlcov/
 # .coverage
 # .coverage.*
 .cache
+.idea
 nosetests.xml
 # coverage.xml
 # *.cover
@@ -69,9 +70,3 @@ nginx.conf
 # **/migrations/**
 # !**/migrations
 # !**/migrations/__init__.py
-
-# volumes directory
-postgres_data/
-redis.conf/
-memcached_data/
-mnt/

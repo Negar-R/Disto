@@ -1,5 +1,5 @@
 from pydantic.class_validators import Optional
-from pydantic import BaseModel, validator, constr
+from pydantic import BaseModel, validator, constr, Field
 from instagram.models import Profile, FollowingRelation, Post
 import re
 
@@ -14,9 +14,9 @@ class BodyStructureValidator(BaseModel):
 # PROFILE SERIALIZERS
 class ProfileValidator(BaseModel):
     username: constr(min_length=5, max_length=100, strip_whitespace=True)
-    first_name: Optional[constr(min_length=2, max_length=20, strip_whitespace=True)] = None
-    last_name: Optional[str]
-    picture: Optional[str]
+    first_name: Optional[str] = Field(None, min_length=2, max_length=50, extra={'strip_whitespace': True})
+    last_name: Optional[str] = Field(None, min_length=2, max_length=50, extra={'strip_whitespace': True})
+    picture: Optional[str] = Field(None, min_length=2, max_length=50, extra={'strip_whitespace': True})
 
     @validator('username', allow_reuse=True)
     def check_username_len_and_char(cls, v):
@@ -34,7 +34,7 @@ class FollowingRelationValidator(BaseModel):
 # POST SERIALIZERS
 class PostValidator(BaseModel):
     image: constr(min_length=5, max_length=100, strip_whitespace=True)
-    caption: Optional[constr(min_length=2, max_length=200, strip_whitespace=True)]
+    caption: Optional[str] = Field(None, min_length=2, max_length=50, extra={'strip_whitespace': True})
 
 
 class CommentValidator(BaseModel):

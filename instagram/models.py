@@ -7,6 +7,7 @@ from mongoengine import *
 # PROFILE MODEL
 class Profile(Document):
     _id = ObjectIdField()
+
     username = StringField(required=True)
     first_name = StringField(required=False)
     last_name = StringField(required=False)
@@ -39,10 +40,12 @@ class EmbeddedAuthor(EmbeddedDocument):
 # POST MODEL
 class Comment(Document):
     _id = ObjectIdField()
-    comment_post = StringField()
     post_id = ObjectIdField()
+
     # Profile
     author = EmbeddedDocumentField(EmbeddedAuthor)
+    comment_text = StringField()
+    tags = ListField(StringField(max_length=30))
     date = IntField()
 
     meta = {
@@ -52,9 +55,10 @@ class Comment(Document):
 
 class Like(Document):
     _id = ObjectIdField()
+    post_id = ObjectIdField()
+
     # Profile
     author = EmbeddedDocumentField(EmbeddedAuthor)
-    post_id = ObjectIdField()
 
     meta = {
         'collection': 'likes'
@@ -63,11 +67,12 @@ class Like(Document):
 
 class Post(Document):
     _id = ObjectIdField()
+    publisher = ObjectIdField()
+
     image = StringField()
     caption = StringField()
     tags = ListField(StringField(max_length=30))
     likes = IntField(default=0)
-    publisher = ObjectIdField()
     published_date = IntField()
 
     meta = {
@@ -75,12 +80,11 @@ class Post(Document):
     }
 
 
-class FirstPage(Document):
+class HomePage(Document):
     _id = ObjectIdField()
     owner = ObjectIdField()
     # Post
     inclusive_pots = ListField(ObjectIdField())
-    inclusive_publishers = ListField(ObjectIdField())
 
     meta = {
         'collection': 'first_page'

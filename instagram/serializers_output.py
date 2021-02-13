@@ -1,16 +1,9 @@
 from rest_framework_mongoengine.serializers import DocumentSerializer, EmbeddedDocumentSerializer
 
 
-from instagram.out_models import OutputCreatePost, OutputProfile, EmbeddedUser, EmbeddedPost, OutputFirstPage, \
+from instagram.out_models import OutputCreatePost, OutputProfile, EmbeddedUser, EmbeddedPost, OutputHomePage, \
     OutputFollowers, OutputFollowings, EmbeddedComment, EmbeddedLike, OutputPagePost, EmbeddedPagePost, OutputComment, \
-    OutputLike
-
-
-class ProfileSerializerVersionOne(DocumentSerializer):
-    class Meta:
-        model = OutputProfile
-        fields = ('username', 'first_name', 'last_name', 'picture', 'number_of_follower', 'number_of_following',
-                  'number_of_posts', 'date_of_join')
+    OutputLike, OutputGeneral
 
 
 class EmbeddedUserSerializerVersionOne(DocumentSerializer):
@@ -24,7 +17,7 @@ class EmbeddedCommentsSerializerVersionOne(DocumentSerializer):
 
     class Meta:
         model = EmbeddedComment
-        fields = ('author', 'comment_post', 'date')
+        fields = ('author', 'comment_text', 'date')
 
 
 class EmbeddedLikeSerializerVersionOne(DocumentSerializer):
@@ -52,6 +45,19 @@ class EmbeddedPagePostSerializerVersionOne(DocumentSerializer):
         fields = ('post',)
 
 
+class GeneralSerializerVersionOne(DocumentSerializer):
+    class Meta:
+        model = OutputGeneral
+        fields = ('method', 'data', 'platform', 'lang_code', 'ver_api')
+
+
+class ProfileSerializerVersionOne(DocumentSerializer):
+    class Meta:
+        model = OutputProfile
+        fields = ('username', 'first_name', 'last_name', 'picture', 'number_of_follower', 'number_of_following',
+                  'number_of_posts', 'date_of_join')
+
+
 class CreatePostSerializerVersion1(DocumentSerializer):
     publisher = EmbeddedUserSerializerVersionOne(many=False)
     post = EmbeddedPostSerializerVersionOne(many=False)
@@ -69,11 +75,11 @@ class PagePostSerializerVersionOne(DocumentSerializer):
         fields = ('posts', )
 
 
-class FirstPageSerializerVersionOne(DocumentSerializer):
+class HomePageSerializerVersionOne(DocumentSerializer):
     posts = CreatePostSerializerVersion1(many=True)
 
     class Meta:
-        model = OutputFirstPage
+        model = OutputHomePage
         fields = ('posts', )
 
 

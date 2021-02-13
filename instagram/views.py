@@ -5,10 +5,12 @@ from rest_framework.views import APIView
 
 from instagram.base_functions import manage_response
 from instagram.methods_version_one import get_profile_version_1, create_profile_version_1, update_profile_version_1, \
-    create_post_version_1, get_first_page_version_1, post_comment_version_1, follow_version_1, \
+    create_post_version_1, get_home_page_version_1, post_comment_version_1, follow_version_1, \
     get_followers_version_1, get_followings_version_1, like_or_unlike_post_version_1, get_page_posts_version_1, \
-    get_comment_version_1
-from instagram.validators import BodyStructureValidator
+    get_comments_version_1, get_likes_version_1
+from instagram.serializers_input import BodyStructureValidator
+
+list_of_exists_api_version = [1, ]
 
 
 def check_body_of_request(data):
@@ -28,13 +30,14 @@ class InstagramAPIView(APIView):
     def post(self, request):
 
         valid = check_body_of_request(request.data)
-        if valid is False:
+        ver_api = request.data.get("ver_api")
+        if valid is False or ver_api not in list_of_exists_api_version:
             response = manage_response(status=status.HTTP_200_OK,
                                        status_info="invalid input",
                                        data={})
             return Response(response)
 
-        if request.data.get("ver_api") == 1:
+        if ver_api == 1:
             method = request.data.get("method")
             data = request.data.get("data")
             auth = request.data.get("auth")
@@ -57,16 +60,16 @@ class InstagramAPIView(APIView):
             elif method == "getPagePosts":
                 response = get_page_posts_version_1(data)
 
-            elif method == "getFirstPage":
+            elif method == "getHomePage":
                 # auth = owner_id
-                response = get_first_page_version_1(auth)
+                response = get_home_page_version_1(auth)
 
             elif method == "postComment":
                 # auth = author_id
                 response = post_comment_version_1(auth, data)
 
-            elif method == "getComment":
-                response = get_comment_version_1(data)
+            elif method == "getComments":
+                response = get_comments_version_1(data)
 
             elif method == "like":
                 # auth = author_id
@@ -74,6 +77,9 @@ class InstagramAPIView(APIView):
 
             elif method == "unlike":
                 response = like_or_unlike_post_version_1("unlike", auth, data)
+
+            elif method == "getLikes":
+                response = get_likes_version_1(data)
 
             elif method == "startToFollow":
                 # auth = following_id

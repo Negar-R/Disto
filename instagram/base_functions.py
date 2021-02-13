@@ -3,9 +3,9 @@ import time
 from bson import ObjectId
 
 from LikeInstaProject import mongo_client_obj
-from instagram.models import Profile, Post, FollowingRelation, FirstPage, Comment, Like
+from instagram.models import Profile, Post, FollowingRelation, HomePage, Comment, Like
 from instagram.out_models import OutputCreatePost, EmbeddedUser, EmbeddedPost, EmbeddedComment, OutputProfile, \
-    OutputFirstPage, OutputFollowers, OutputFollowings, OutputPagePost, OutputComment
+    OutputHomePage, OutputFollowers, OutputFollowings, OutputPagePost, OutputComment, OutputLike
 
 
 def manage_response(status, status_info, data):
@@ -40,13 +40,13 @@ def make_dict_embedded_profile(profile_obj):
     return profile_dict
 
 
-def make_dict_embedded_comment(author_username, author_picture, comment_post, date):
+def make_dict_embedded_comment(author_username, author_picture, comment_text, date):
     comment_dict = {
         "author": {
             "username": author_username,
             "picture": author_picture
         },
-        "comment_post": comment_post,
+        "comment_text": comment_text,
         "date": date
     }
     return comment_dict
@@ -107,9 +107,9 @@ def publish_on_first_page(publisher_id, post_id):
     list_of_followings = mongo_client_obj.fetch_data(FollowingRelation, {'follower': publisher_id})
     for follow_relation in list_of_followings:
         following = follow_relation["following"]
-        mongo_client_obj.update_data(FirstPage,
+        mongo_client_obj.update_data(HomePage,
                                      {'owner': following},
-                                     {"$push": {"inclusive_pots": post_id, "inclusive_publishers": publisher_id}},
+                                     {"$push": {"inclusive_pots": post_id}},
                                      upsert=True)
 
     return True
@@ -127,16 +127,17 @@ def get_page_post(profile_id):
     return output_page_post
 
 
-def get_first_page(owner_id):
-    first_page_obj = mongo_client_obj.fetch_one_data(FirstPage, {'owner': ObjectId(owner_id)})
+def get_home_page(owner_id):
+    first_page_obj = mongo_client_obj.fetch_one_data(HomePage, {'owner': ObjectId(owner_id)})
 
     list_of_inclusive_posts_id = first_page_obj.inclusive_pots
     list_of_inclusive_posts_dict = mongo_client_obj.fetch_data(Post,
                                                                {'_id': {"$in": list_of_inclusive_posts_id}})
-
-    list_of_inclusive_publishers_id = first_page_obj.inclusive_publishers
+    publisher_id_list = list()
+    for post in list_of_inclusive_posts_dict:
+        publisher_id_list.append(post.get("publisher"))
     list_of_inclusive_publishers_dict = mongo_client_obj.fetch_data(Profile,
-                                                                    {'_id': {"$in": list_of_inclusive_publishers_id}})
+                                                                    {'_id': {"$in": publisher_id_list}})
     list_of_post_in_page = []
     for post_dict in list_of_inclusive_posts_dict:
         for profile_dict in list_of_inclusive_publishers_dict:
@@ -148,29 +149,30 @@ def get_first_page(owner_id):
                 list_of_post_in_page.append({'publisher': publisher_dict,
                                              'post': changed_post_dict})
                 break
-    output_first_page = OutputFirstPage(posts=list_of_post_in_page)
+    output_first_page = OutputHomePage(posts=list_of_post_in_page)
     return output_first_page
 
 
-def post_comment(post_id, comment_post, author_id, date):
+def post_comment(post_id, comment_text, tags, author_id, date):
     author_obj = mongo_client_obj.fetch_one_data(Profile, {'_id': ObjectId(author_id)})
     data = {
         'post_id': post_id,
-        'comment_post': comment_post,
+        'comment_text': comment_text,
         'author': {
             'username': author_obj.username,
             'picture': author_obj.picture
         },
+        'tags': tags,
         'date': date
     }
     comment_obj = mongo_client_obj.insert_one_data(Comment, data)
     comment_dict = make_dict_embedded_comment(author_obj.username, author_obj.picture,
-                                              comment_obj.comment_post, comment_obj.date)
+                                              comment_obj.comment_text, comment_obj.date)
     output_comment = EmbeddedComment(**comment_dict)
     return output_comment
 
 
-def get_comment(post_id):
+def get_comments(post_id):
     list_of_comments = mongo_client_obj.fetch_data(Comment, {'post_id': ObjectId(post_id)})
     list_of_comments_dict = []
     for comment in list_of_comments:
@@ -178,7 +180,7 @@ def get_comment(post_id):
         author_picture = comment["author"]["picture"]
         comment_dict = make_dict_embedded_comment(author_username,
                                                   author_picture,
-                                                  comment.get("comment_post"),
+                                                  comment.get("comment_text"),
                                                   comment.get("date"))
 
         list_of_comments_dict.append(comment_dict)
@@ -186,20 +188,27 @@ def get_comment(post_id):
     return output_comment_obj
 
 
-def get_like(post_id):
+def get_likes(post_id):
     list_of_likes = mongo_client_obj.fetch_data(Like, {'post_id': ObjectId(post_id)})
     list_of_likes_dict = []
     for like in list_of_likes:
         author_username = like["author"]["username"]
         author_picture = like["author"]["picture"]
+        list_of_likes_dict.append({'author': {
+                                                'username': author_username,
+                                                'picture': author_picture}})
 
-    # TODO: complete this method
+    output_like_obj = OutputLike(likes=list_of_likes_dict)
+    return output_like_obj
 
 
-def like_post(data):
-    like_obj = mongo_client_obj.insert_one_data(Like, data)
+def like_post(author_id, post_id):
+    author_obj = mongo_client_obj.fetch_one_data(Profile, {'_id': ObjectId(author_id)})
+    like_obj = mongo_client_obj.insert_one_data(Like, {'author': {
+                                                            'username': author_obj.username,
+                                                            'picture': author_obj.picture},
+                                                       'post_id': ObjectId(post_id)})
     # increase the number of post's like
-    post_id = data.get('post_id')
     mongo_client_obj.update_data(Post,
                                  {'_id': ObjectId(post_id)},
                                  {"$inc": {'likes': 1}},
@@ -207,9 +216,12 @@ def like_post(data):
     return True
 
 
-def unlike_post(data):
-    unlike_obj = mongo_client_obj.delete_one_data(Like, data)
-    post_id = data.get("post_id")
+def unlike_post(author_id, post_id):
+    author_obj = mongo_client_obj.fetch_one_data(Profile, {'_id': ObjectId(author_id)})
+    unlike_obj = mongo_client_obj.delete_one_data(Like, {'author': {
+                                                            'username': author_obj.username,
+                                                            'picture': author_obj.picture},
+                                                         'post_id': post_id})
     mongo_client_obj.update_data(Post,
                                  {'_id': ObjectId(post_id)},
                                  {"$inc": {'likes': -1}},

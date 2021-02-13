@@ -14,7 +14,7 @@ class EmbeddedUser(EmbeddedDocument):
 
 class EmbeddedComment(EmbeddedDocument):
     author = EmbeddedDocumentField(EmbeddedUser)
-    comment_post = StringField()
+    comment_text = StringField()
     date = IntField()
 
 
@@ -39,6 +39,21 @@ class EmbeddedPagePost(EmbeddedDocument):
     post = EmbeddedDocumentField(EmbeddedPost)
 
 
+class OutputGeneral(Document):
+    platform_type = {
+        'IOS': 'IOS',
+        'Android': 'Android',
+        'Desktop': 'Desktop',
+        'Web': 'Web'
+    }
+
+    method = StringField(max_length=50)
+    data = DictField()
+    platform = StringField(min_length=3, required=True)
+    lang_code = StringField(min_length=2, max_length=2)
+    ver_api = IntField()
+
+
 class OutputProfile(Document):
     username = StringField(required=True)
     first_name = StringField(required=False)
@@ -54,7 +69,7 @@ class OutputPagePost(Document):
     posts = EmbeddedDocumentListField(EmbeddedPagePost)
 
 
-class OutputFirstPage(Document):
+class OutputHomePage(Document):
     posts = ListField(EmbeddedDocumentField(OutputCreatePost))
 
 

@@ -1,5 +1,7 @@
 from pydantic.class_validators import Optional
 from pydantic import BaseModel, validator, constr, Field
+from pydantic.typing import Literal
+
 from instagram.models import Profile, FollowingRelation, Post
 import re
 
@@ -8,6 +10,8 @@ class BodyStructureValidator(BaseModel):
     method: constr(min_length=2, strip_whitespace=True)
     data: dict
     auth: constr(min_length=24, max_length=24, strip_whitespace=True)
+    platform: Literal['IOS', 'Android', 'Desktop', 'Web']
+    lang_code: str = Field(min_length=2, max_length=2)
     ver_api: int
 
 
@@ -39,7 +43,7 @@ class PostValidator(BaseModel):
 
 class CommentValidator(BaseModel):
     post_id: constr(min_length=24, max_length=24, strip_whitespace=True)
-    comment_post: constr(min_length=5, max_length=100, strip_whitespace=True)
+    comment_text: constr(min_length=5, max_length=100, strip_whitespace=True)
 
 
 class LikeValidator(BaseModel):

@@ -1,7 +1,7 @@
 from rest_framework_mongoengine.serializers import DocumentSerializer, EmbeddedDocumentSerializer
 
 
-from instagram.out_models import OutputCreatePost, OutputProfile, EmbeddedUser, EmbeddedPost, OutputHomePage, \
+from instagram.out_models import OutputPost, OutputProfile, EmbeddedUser, EmbeddedPost, OutputHomePage, \
     OutputFollowers, OutputFollowings, EmbeddedComment, EmbeddedLike, OutputPagePost, EmbeddedPagePost, OutputComment, \
     OutputLike, OutputGeneral
 
@@ -58,12 +58,12 @@ class ProfileSerializerVersionOne(DocumentSerializer):
                   'number_of_posts', 'date_of_join')
 
 
-class CreatePostSerializerVersion1(DocumentSerializer):
+class PostSerializerVersion1(DocumentSerializer):
     publisher = EmbeddedUserSerializerVersionOne(many=False)
     post = EmbeddedPostSerializerVersionOne(many=False)
 
     class Meta:
-        model = OutputCreatePost
+        model = OutputPost
         fields = ('publisher', 'post')
 
 
@@ -72,15 +72,15 @@ class PagePostSerializerVersionOne(DocumentSerializer):
 
     class Meta:
         model = OutputPagePost
-        fields = ('posts', )
+        fields = ('start_id', 'has_continue', 'posts', )
 
 
 class HomePageSerializerVersionOne(DocumentSerializer):
-    posts = CreatePostSerializerVersion1(many=True)
+    posts = PostSerializerVersion1(many=True)
 
     class Meta:
         model = OutputHomePage
-        fields = ('posts', )
+        fields = ('start_id', 'has_continue', 'posts', )
 
 
 class ProfileFollowSerializerVersionOne(EmbeddedDocumentSerializer):
@@ -94,7 +94,7 @@ class CommentSerializerVersionOne(DocumentSerializer):
 
     class Meta:
         model = OutputComment
-        fields = ('comments', )
+        fields = ('start_id', 'has_continue', 'comments', )
 
 
 class LikeSerializerVersionOne(DocumentSerializer):
@@ -102,7 +102,7 @@ class LikeSerializerVersionOne(DocumentSerializer):
 
     class Meta:
         model = OutputLike
-        fields = ('likes', )
+        fields = ('start_id', 'has_continue', 'likes', )
 
 
 class GetFollowersSerializerVersionOne(DocumentSerializer):
@@ -110,7 +110,7 @@ class GetFollowersSerializerVersionOne(DocumentSerializer):
 
     class Meta:
         model = OutputFollowers
-        fields = ('followers', )
+        fields = ('start_id', 'has_continue', 'followers', )
 
 
 class GetFollowingsSerializerVersionOne(DocumentSerializer):
@@ -118,4 +118,4 @@ class GetFollowingsSerializerVersionOne(DocumentSerializer):
 
     class Meta:
         model = OutputFollowings
-        fields = ('followings',)
+        fields = ('start_id', 'has_continue', 'followings',)

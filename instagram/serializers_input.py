@@ -52,3 +52,4 @@ class LikeValidator(BaseModel):
 
 class PagePostsValidator(BaseModel):
     profile_id: constr(min_length=24, max_length=24, strip_whitespace=True)
+    start_id: Optional[str] = Field(None, min_length=24, max_length=24, extra={'strip_whitespace': True})

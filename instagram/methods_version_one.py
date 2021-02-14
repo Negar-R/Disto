@@ -11,11 +11,12 @@ from instagram.base_functions import get_profile, manage_response, create_profil
 from instagram.out_models import OutputGeneral
 from instagram.serializers_input import ProfileValidator, PostValidator, CommentValidator, LikeValidator, \
     FollowingRelationValidator, PagePostsValidator
-from instagram.serializers_output import ProfileSerializerVersionOne, CreatePostSerializerVersion1, \
+from instagram.serializers_output import ProfileSerializerVersionOne, PostSerializerVersion1, \
     EmbeddedPostSerializerVersionOne, EmbeddedUserSerializerVersionOne, EmbeddedCommentsSerializerVersionOne, \
     HomePageSerializerVersionOne, GetFollowingsSerializerVersionOne, ProfileFollowSerializerVersionOne, \
     GetFollowersSerializerVersionOne, PagePostSerializerVersionOne, CommentSerializerVersionOne, \
     LikeSerializerVersionOne, GeneralSerializerVersionOne
+
 
 # Profile Methods Version 1
 def profile_data_constraints(data):
@@ -96,15 +97,17 @@ def create_post_version_1(publisher_id, data):
     }
 
     output_create_post_obj = create_post(new_data)
-    serializer = CreatePostSerializerVersion1(output_create_post_obj)
+    serializer = PostSerializerVersion1(output_create_post_obj)
     response = manage_response(status=status.HTTP_200_OK,
                                status_info="ok",
                                data={'post': serializer.data})
     return response
 
 
-def get_home_page_version_1(owner_id):
-    output_first_page_obj = get_home_page(owner_id)
+def get_home_page_version_1(owner_id, data):
+    start_id = data.get("start_id")
+
+    output_first_page_obj = get_home_page(owner_id, start_id)
     # if
     serializer = HomePageSerializerVersionOne(output_first_page_obj)
     response = manage_response(status=status.HTTP_200_OK,

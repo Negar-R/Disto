@@ -27,12 +27,6 @@ class EmbeddedPost(EmbeddedDocument):
     caption = StringField()
     number_of_likes = IntField(default=0)
     likes = IntField()
-    # comments = ListField(EmbeddedDocumentField(EmbeddedComment))
-
-
-class OutputCreatePost(EmbeddedDocument):
-    publisher = EmbeddedDocumentField(EmbeddedUser)
-    post = EmbeddedDocumentField(EmbeddedPost)
 
 
 class EmbeddedPagePost(EmbeddedDocument):
@@ -54,6 +48,11 @@ class OutputGeneral(Document):
     ver_api = IntField()
 
 
+class OutputPost(EmbeddedDocument):
+    publisher = EmbeddedDocumentField(EmbeddedUser)
+    post = EmbeddedDocumentField(EmbeddedPost)
+
+
 class OutputProfile(Document):
     username = StringField(required=True)
     first_name = StringField(required=False)
@@ -66,25 +65,37 @@ class OutputProfile(Document):
 
 
 class OutputPagePost(Document):
+    start_id = StringField()
+    has_continue = BooleanField()
     posts = EmbeddedDocumentListField(EmbeddedPagePost)
 
 
 class OutputHomePage(Document):
-    posts = ListField(EmbeddedDocumentField(OutputCreatePost))
+    start_id = StringField()
+    has_continue = BooleanField()
+    posts = ListField(EmbeddedDocumentField(OutputPost))
 
 
 class OutputComment(Document):
+    start_id = StringField()
+    has_continue = BooleanField()
     comments = ListField(EmbeddedDocumentField(EmbeddedComment))
 
 
 class OutputLike(Document):
+    start_id = StringField()
+    has_continue = BooleanField()
     likes = EmbeddedDocumentListField(EmbeddedLike)
 
 
 class OutputFollowers(Document):
+    start_id = StringField()
+    has_continue = BooleanField()
     followers = ListField(EmbeddedDocumentField(EmbeddedUser))
 
 
 class OutputFollowings(Document):
+    start_id = StringField()
+    has_continue = BooleanField()
     followings = ListField(EmbeddedDocumentField(EmbeddedUser))
 

@@ -84,7 +84,7 @@ class HomePage(Document):
     _id = ObjectIdField()
     owner = ObjectIdField()
     # Post
-    inclusive_pots = ListField(ObjectIdField())
+    inclusive_posts = ListField(ObjectIdField())
 
     meta = {
         'collection': 'first_page'

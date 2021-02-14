@@ -3,8 +3,10 @@ import time
 from bson import ObjectId
 
 from LikeInstaProject import mongo_client_obj
+from LikeInstaProject.settings import per_page_limit
+from instagram.commons import pagination
 from instagram.models import Profile, Post, FollowingRelation, HomePage, Comment, Like
-from instagram.out_models import OutputCreatePost, EmbeddedUser, EmbeddedPost, EmbeddedComment, OutputProfile, \
+from instagram.out_models import OutputPost, EmbeddedUser, EmbeddedPost, EmbeddedComment, OutputProfile, \
     OutputHomePage, OutputFollowers, OutputFollowings, OutputPagePost, OutputComment, OutputLike
 
 
@@ -98,7 +100,7 @@ def create_post(data):
     publish_on_first_page(post_obj.publisher, post_obj._id)
     post_dict = make_dict_embedded_post(post_obj)
     profile_dict = make_dict_embedded_profile(profile_obj)
-    output_create_post_obj = OutputCreatePost(**{'publisher': profile_dict,
+    output_create_post_obj = OutputPost(**{'publisher': profile_dict,
                                                  'post': post_dict})
     return output_create_post_obj
 
@@ -109,7 +111,7 @@ def publish_on_first_page(publisher_id, post_id):
         following = follow_relation["following"]
         mongo_client_obj.update_data(HomePage,
                                      {'owner': following},
-                                     {"$push": {"inclusive_pots": post_id}},
+                                     {"$push": {"inclusive_posts": post_id}},
                                      upsert=True)
 
     return True
@@ -117,22 +119,34 @@ def publish_on_first_page(publisher_id, post_id):
 
 def get_page_post(profile_id):
     list_of_page_post_dict = mongo_client_obj.fetch_data(Post,
-                                                         {'publisher': ObjectId(profile_id)})
+                                                         {'publisher': ObjectId(profile_id)},
+                                                         per_page_limit=per_page_limit)
     list_of_post_in_page = []
     for post_dict in list_of_page_post_dict:
         post_obj = Post(**post_dict)
         changed_post_dict = make_dict_embedded_post(post_obj)
         list_of_post_in_page.append({'post': changed_post_dict})
-    output_page_post = OutputPagePost(posts=list_of_post_in_page)
+
+    start_id, has_continue = pagination(list_of_page_post_dict, per_page_limit)
+    output_page_post = OutputPagePost(start_id=start_id, has_continue=has_continue, posts=list_of_post_in_page)
     return output_page_post
 
 
-def get_home_page(owner_id):
+def get_home_page(owner_id, start_id):
     first_page_obj = mongo_client_obj.fetch_one_data(HomePage, {'owner': ObjectId(owner_id)})
 
-    list_of_inclusive_posts_id = first_page_obj.inclusive_pots
-    list_of_inclusive_posts_dict = mongo_client_obj.fetch_data(Post,
-                                                               {'_id': {"$in": list_of_inclusive_posts_id}})
+    list_of_inclusive_posts_id = first_page_obj.inclusive_posts
+    if start_id is None:
+        list_of_inclusive_posts_dict = mongo_client_obj.fetch_data(Post,
+                                                                   {"$and": [
+                                                                       {'_id': {"$in": list_of_inclusive_posts_id}},
+                                                                   ]}, per_page_limit=per_page_limit)
+    else:
+        list_of_inclusive_posts_dict = mongo_client_obj.fetch_data(Post,
+                                                                   {"$and": [
+                                                                       {'_id': {"$in": list_of_inclusive_posts_id}},
+                                                                       {'_id': {"$lt": ObjectId(start_id)}}
+                                                                   ]}, per_page_limit=per_page_limit)
     publisher_id_list = list()
     for post in list_of_inclusive_posts_dict:
         publisher_id_list.append(post.get("publisher"))
@@ -149,7 +163,9 @@ def get_home_page(owner_id):
                 list_of_post_in_page.append({'publisher': publisher_dict,
                                              'post': changed_post_dict})
                 break
-    output_first_page = OutputHomePage(posts=list_of_post_in_page)
+
+    start_id, has_continue = pagination(list_of_inclusive_posts_dict, per_page_limit)
+    output_first_page = OutputHomePage(start_id=start_id, has_continue=has_continue, posts=list_of_post_in_page)
     return output_first_page
 
 
@@ -173,7 +189,8 @@ def post_comment(post_id, comment_text, tags, author_id, date):
 
 
 def get_comments(post_id):
-    list_of_comments = mongo_client_obj.fetch_data(Comment, {'post_id': ObjectId(post_id)})
+    list_of_comments = mongo_client_obj.fetch_data(Comment, {'post_id': ObjectId(post_id)},
+                                                   per_page_limit=per_page_limit)
     list_of_comments_dict = []
     for comment in list_of_comments:
         author_username = comment["author"]["username"]
@@ -184,12 +201,15 @@ def get_comments(post_id):
                                                   comment.get("date"))
 
         list_of_comments_dict.append(comment_dict)
-    output_comment_obj = OutputComment(comments=list_of_comments_dict)
+
+    start_id, has_continue = pagination(list_of_comments, per_page_limit)
+    output_comment_obj = OutputComment(start_id=start_id, has_continue=has_continue, comments=list_of_comments_dict)
     return output_comment_obj
 
 
 def get_likes(post_id):
-    list_of_likes = mongo_client_obj.fetch_data(Like, {'post_id': ObjectId(post_id)})
+    list_of_likes = mongo_client_obj.fetch_data(Like, {'post_id': ObjectId(post_id)},
+                                                per_page_limit=per_page_limit)
     list_of_likes_dict = []
     for like in list_of_likes:
         author_username = like["author"]["username"]
@@ -198,7 +218,8 @@ def get_likes(post_id):
                                                 'username': author_username,
                                                 'picture': author_picture}})
 
-    output_like_obj = OutputLike(likes=list_of_likes_dict)
+    start_id, has_continue = pagination(list_of_likes, per_page_limit)
+    output_like_obj = OutputLike(start_id=start_id, has_continue=has_continue, likes=list_of_likes_dict)
     return output_like_obj
 
 
@@ -218,10 +239,9 @@ def like_post(author_id, post_id):
 
 def unlike_post(author_id, post_id):
     author_obj = mongo_client_obj.fetch_one_data(Profile, {'_id': ObjectId(author_id)})
-    unlike_obj = mongo_client_obj.delete_one_data(Like, {'author': {
-                                                            'username': author_obj.username,
-                                                            'picture': author_obj.picture},
-                                                         'post_id': post_id})
+    unlike_obj = mongo_client_obj.delete_one_data(Like, {"$and": [{'author': {'username': author_obj.username,
+                                                                              'picture': author_obj.picture}},
+                                                                  {'post_id': ObjectId(post_id)}]})
     mongo_client_obj.update_data(Post,
                                  {'_id': ObjectId(post_id)},
                                  {"$inc": {'likes': -1}},
@@ -269,37 +289,41 @@ def stop_to_follow(following_id, follower_id):
 
 def get_followers(following_id):
     list_of_followers = mongo_client_obj.fetch_data(FollowingRelation,
-                                                    {'following': ObjectId(following_id)})
+                                                    {'following': ObjectId(following_id)},
+                                                    per_page_limit=per_page_limit)
     list_of_followers_id = []
     for follower in list_of_followers:
         list_of_followers_id.append(follower.get("follower"))
 
     list_of_followers_profile = mongo_client_obj.fetch_data(Profile,
                                                             {'_id': {"$in": list_of_followers_id}})
-    list_of_followers = []
+    followers = []
     for follower_profile in list_of_followers_profile:
         profile_obj = Profile(**follower_profile)
         profile_dict = make_dict_embedded_profile(profile_obj)
-        list_of_followers.append(profile_dict)
+        followers.append(profile_dict)
 
-    output_followers_obj = OutputFollowers(followers=list_of_followers)
+    start_id, has_continue = pagination(list_of_followers, per_page_limit)
+    output_followers_obj = OutputFollowers(start_id=start_id, has_continue=has_continue, followers=followers)
     return output_followers_obj
 
 
 def get_followings(follower_id):
     list_of_followings = mongo_client_obj.fetch_data(FollowingRelation,
-                                                     {'follower': ObjectId(follower_id)})
+                                                     {'follower': ObjectId(follower_id)},
+                                                     per_page_limit=per_page_limit)
     list_of_followings_id = []
     for following in list_of_followings:
         list_of_followings_id.append(following.get("following"))
     list_of_followings_profile = mongo_client_obj.fetch_data(Profile,
                                                              {'_id': {"$in": list_of_followings_id}})
 
-    list_of_followings = []
+    followings = []
     for following_profile in list_of_followings_profile:
         profile_obj = Profile(**following_profile)
         profile_dict = make_dict_embedded_profile(profile_obj)
-        list_of_followings.append(profile_dict)
+        followings.append(profile_dict)
 
-    output_followings_obj = OutputFollowings(followings=list_of_followings)
+    start_id, has_continue = pagination(list_of_followings, per_page_limit)
+    output_followings_obj = OutputFollowings(start_id=start_id, has_continue=has_continue, followings=followings)
     return output_followings_obj

@@ -18,10 +18,15 @@ class MongoClientClass:
         obj = modelName(**found_dict)
         return obj
 
-    def fetch_data(self, modelName, query: dict):
+    def fetch_data(self, modelName, query: dict, **kwargs):
         db_collection = modelName._get_collection_name()
         self.mongo_collection = self.mongo_db[db_collection]
-        data = dumps(list(self.mongo_collection.find(query)))
+        if kwargs.get("per_page_limit"):
+            per_page = kwargs["per_page_limit"]
+            founded_documents = self.mongo_collection.find(query).sort([('_id', -1), ]).limit(per_page)
+        else:
+            founded_documents = self.mongo_collection.find(query)
+        data = dumps(list(founded_documents))
         return loads(data)
 
     def insert_one_data(self, modelName, kwargs):

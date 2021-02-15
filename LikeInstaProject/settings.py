@@ -115,6 +115,51 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+        },
+        'simple': {
+            'format': '%(name)s:%(funcName)s:%(message)s',
+        },
+    },
+    'handlers': {
+        'instagram_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'instagram_app_logging.log',
+            'formatter': 'verbose'
+        },
+        'django_file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'like_insta_project.log',
+            'formatter': 'verbose'
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'django_file'],
+            'propagate': True,
+            'level': 'ERROR',
+        },
+        'instagram': {
+            'handlers': ['instagram_file'],
+            'propagate': True,
+            'level': 'INFO'
+        },
+    }
+}
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/

@@ -1,4 +1,5 @@
 import time
+import logging
 
 from pydantic import ValidationError
 from rest_framework import status
@@ -14,6 +15,7 @@ from instagram.out_models import OutputGeneral
 from instagram.serializers_input import BodyStructureValidator
 from instagram.serializers_output import GeneralSerializerVersionOne
 
+logger = logging.getLogger(__name__)
 list_of_exists_api_version = [1, ]
 
 
@@ -24,7 +26,6 @@ def check_body_of_request(data):
         response = manage_response(status=status.HTTP_200_OK,
                                    status_info="invalid input",
                                    data={})
-        print("error : ", e.errors())
         return False
 
 
@@ -50,6 +51,7 @@ class InstagramAPIView(APIView):
                 auth = request.data.get("auth")
                 platform = request.data.get("platform")
                 lang_code = request.data.get("lang_code")
+                flag = True
 
                 if method == "createProfile":
                     response = create_profile_version_1(data)
@@ -115,11 +117,14 @@ class InstagramAPIView(APIView):
 
                 end_time = time.time()
 
-                if end_time - start_time > 5:
-                    # make a log
-                    pass
+                if end_time - start_time > 3:
+                    logger.warning("getting response takes time more than 3 seconds")
 
                 return Response(response)
 
         except Exception as e:
-            print(e)
+            logger.error("invalid input : " + str(e))
+            response = manage_response(status=status.HTTP_200_OK,
+                                       status_info="invalid input",
+                                       data={})
+            return Response(response)

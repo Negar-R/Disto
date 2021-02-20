@@ -1,8 +1,12 @@
+import logging
+
 from bson import ObjectId
 from pymongo import MongoClient, ReturnDocument
 from bson.json_util import dumps, loads
 from LikeInstaProject.settings import MONGO_URI, MONGO_NAME
 from instagram.models import Post, Profile
+
+logger = logging.getLogger(__name__)
 
 
 class MongoClientClass:
@@ -11,12 +15,17 @@ class MongoClientClass:
         self.mongo_db = self.mongo_client[MONGO_NAME]
         self.mongo_collection = ""
 
-    def fetch_one_data(self, modelName, query: dict):
+    def fetch_one_data(self, modelName, query: dict, **kwargs):
         db_collection = modelName._get_collection_name()
         self.mongo_collection = self.mongo_db[db_collection]
         found_dict = self.mongo_collection.find_one(query)
-        obj = modelName(**found_dict)
-        return obj
+        if found_dict is None:
+            raise Exception("Does Not Exist")
+        if kwargs.get("count"):
+            return found_dict.count()
+        else:
+            obj = modelName(**found_dict)
+            return obj
 
     def fetch_data(self, modelName, query: dict, **kwargs):
         db_collection = modelName._get_collection_name()
@@ -39,7 +48,15 @@ class MongoClientClass:
     def delete_one_data(self, modelName, kwargs):
         db_collection = modelName._get_collection_name()
         self.mongo_collection = self.mongo_db[db_collection]
-        self.mongo_collection.delete_one(kwargs)
+        result = self.mongo_collection.delete_one(kwargs)
+        if result.deleted_count == 0:
+            raise Exception("Does Not Exist")
+
+    def remove_data(self, modelName, kwargs):
+        db_collection = modelName._get_collection_name()
+        self.mongo_collection = self.mongo_db[db_collection]
+        result = self.mongo_collection.remove(kwargs)
+        return result
 
     def update_data(self, modelName, filter_query, update_query, upsert):
         db_collection = modelName._get_collection_name()
@@ -48,8 +65,11 @@ class MongoClientClass:
                                                                  update_query,
                                                                  return_document=ReturnDocument.AFTER,
                                                                  upsert=upsert)
-        obj = modelName(**updated_dict)
-        return obj
+        if updated_dict:
+            obj = modelName(**updated_dict)
+            return obj
+        else:
+            raise Exception("Does Not Exist")
 
 
 mongo_client_obj = MongoClientClass(MONGO_URI)

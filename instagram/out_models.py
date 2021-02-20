@@ -1,11 +1,27 @@
 from mongoengine import *
 
 
+class OutputGeneral(Document):
+    platform_type = {
+        'IOS': 'IOS',
+        'Android': 'Android',
+        'Desktop': 'Desktop',
+        'Web': 'Web'
+    }
+
+    method = StringField(max_length=50)
+    data = DictField()
+    platform = StringField(min_length=3, required=True)
+    lang_code = StringField(min_length=2, max_length=2)
+    ver_api = IntField()
+
+
 class EmbeddedUser(EmbeddedDocument):
     username = StringField(required=True)
     first_name = StringField(required=False)
     last_name = StringField(required=False)
     picture = StringField(required=False)
+    private = BooleanField()
     number_of_following = IntField(required=False, default=0)
     number_of_follower = IntField(required=False, default=0)
     number_of_posts = IntField(default=0)
@@ -33,21 +49,6 @@ class EmbeddedPagePost(EmbeddedDocument):
     post = EmbeddedDocumentField(EmbeddedPost)
 
 
-class OutputGeneral(Document):
-    platform_type = {
-        'IOS': 'IOS',
-        'Android': 'Android',
-        'Desktop': 'Desktop',
-        'Web': 'Web'
-    }
-
-    method = StringField(max_length=50)
-    data = DictField()
-    platform = StringField(min_length=3, required=True)
-    lang_code = StringField(min_length=2, max_length=2)
-    ver_api = IntField()
-
-
 class OutputPost(EmbeddedDocument):
     publisher = EmbeddedDocumentField(EmbeddedUser)
     post = EmbeddedDocumentField(EmbeddedPost)
@@ -58,6 +59,7 @@ class OutputProfile(Document):
     first_name = StringField(required=False)
     last_name = StringField(required=False)
     picture = StringField(required=False)
+    private = BooleanField()
     number_of_following = IntField(required=False, default=0)
     number_of_follower = IntField(required=False, default=0)
     number_of_posts = IntField(default=0)

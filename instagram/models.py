@@ -12,6 +12,7 @@ class Profile(Document):
     first_name = StringField(required=False)
     last_name = StringField(required=False)
     picture = StringField(required=False)
+    private = BooleanField(default=False)
     number_of_following = IntField(required=False, default=0)
     number_of_follower = IntField(required=False, default=0)
     number_of_posts = IntField(default=0)
@@ -22,10 +23,18 @@ class Profile(Document):
     }
 
 
+class FollowRequest(Document):
+    _id = ObjectIdField()
+    requested_user = ObjectIdField()
+    applicant_user = ObjectIdField()
+
+
 class FollowingRelation(Document):
     _id = ObjectIdField()
     following = ObjectIdField()
     follower = ObjectIdField()
+
+    block = BooleanField(default=False)
 
     meta = {
         'collection': 'following_relation'

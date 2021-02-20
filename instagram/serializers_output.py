@@ -54,8 +54,8 @@ class GeneralSerializerVersionOne(DocumentSerializer):
 class ProfileSerializerVersionOne(DocumentSerializer):
     class Meta:
         model = OutputProfile
-        fields = ('username', 'first_name', 'last_name', 'picture', 'number_of_follower', 'number_of_following',
-                  'number_of_posts', 'date_of_join')
+        fields = ('username', 'first_name', 'last_name', 'picture', 'private', 'number_of_follower',
+                  'number_of_following', 'number_of_posts', 'date_of_join')
 
 
 class PostSerializerVersion1(DocumentSerializer):

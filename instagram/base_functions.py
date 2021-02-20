@@ -3,10 +3,12 @@ import logging
 
 from bson import ObjectId
 
+from rest_framework import status
+
 from LikeInstaProject import mongo_client_obj
 from LikeInstaProject.settings import per_page_limit
 from instagram.commons import pagination
-from instagram.models import Profile, Post, FollowingRelation, HomePage, Comment, Like
+from instagram.models import Profile, Post, FollowingRelation, HomePage, Comment, Like, FollowRequest
 from instagram.out_models import OutputPost, EmbeddedUser, EmbeddedPost, EmbeddedComment, OutputProfile, \
     OutputHomePage, OutputFollowers, OutputFollowings, OutputPagePost, OutputComment, OutputLike
 
@@ -14,9 +16,9 @@ from instagram.out_models import OutputPost, EmbeddedUser, EmbeddedPost, Embedde
 logger = logging.getLogger(__name__)
 
 
-def manage_response(status, status_info, data):
+def manage_response(status_info, data):
     response = {
-        'status': status,
+        'status': status.HTTP_200_OK,
         'status_info': status_info,
         'data': data
     }
@@ -38,6 +40,7 @@ def make_dict_embedded_profile(profile_obj):
         "first_name": profile_obj.first_name,
         "last_name": profile_obj.last_name,
         "picture": profile_obj.picture,
+        "private": profile_obj.private,
         "number_of_following": profile_obj.number_of_following,
         "number_of_follower": profile_obj.number_of_follower,
         "number_of_posts": profile_obj.number_of_posts,
@@ -58,13 +61,14 @@ def make_dict_embedded_comment(author_username, author_picture, comment_text, da
     return comment_dict
 
 
-def create_profile(username, first_name, last_name, picture):
+def create_profile(username, first_name, last_name, picture, private):
     try:
         data = {
             'username': username,
             'first_name': first_name,
             'last_name': last_name,
             'picture': picture,
+            'private': private,
             'date_of_join': time.time()
         }
         profile_obj = mongo_client_obj.insert_one_data(Profile, data)
@@ -73,16 +77,17 @@ def create_profile(username, first_name, last_name, picture):
         return output_profile_obj
     except Exception as e:
         logger.error("create_profile/base : " + str(e))
-        pass
+        raise Exception(str(e))
 
 
-def update_profile(profile_id, username, first_name, last_name, picture):
+def update_profile(profile_id, username, first_name, last_name, picture, private):
     try:
         data = {
             'username': username,
             'first_name': first_name,
             'last_name': last_name,
             'picture': picture,
+            'private': private
         }
         profile_obj = mongo_client_obj.update_data(Profile,
                                                    {'_id': ObjectId(profile_id)},
@@ -93,7 +98,7 @@ def update_profile(profile_id, username, first_name, last_name, picture):
         return output_profile_obj
     except Exception as e:
         logger.error("update_profile/base : " + str(e))
-        pass
+        raise Exception(str(e))
 
 
 def get_profile(profile_id):
@@ -104,7 +109,7 @@ def get_profile(profile_id):
         return output_profile_obj
     except Exception as e:
         logger.error("get_profile/base : " + str(e))
-        pass
+        raise Exception(str(e))
 
 
 def create_post(data):
@@ -122,7 +127,7 @@ def create_post(data):
         return output_create_post_obj
     except Exception as e:
         logger.error("create_post/base :" + str(e))
-        pass
+        raise Exception(str(e))
 
 
 def publish_on_home_page(publisher_id, post_id):
@@ -137,14 +142,22 @@ def publish_on_home_page(publisher_id, post_id):
         return True
     except Exception as e:
         logger.error("publish_on_home_page/base : " + str(e))
-        pass
+        raise Exception(str(e))
 
 
-def get_page_post(profile_id):
+def get_page_post(profile_id, start_id):
     try:
-        list_of_page_post_dict = mongo_client_obj.fetch_data(Post,
-                                                             {'publisher': ObjectId(profile_id)},
-                                                             per_page_limit=per_page_limit)
+        if start_id is None:
+            list_of_page_post_dict = mongo_client_obj.fetch_data(Post,
+                                                                 {'publisher': ObjectId(profile_id)},
+                                                                 per_page_limit=per_page_limit)
+        else:
+            list_of_page_post_dict = mongo_client_obj.fetch_data(Post,
+                                                                 {"$and": [
+                                                                     {'_id': {"$lt": ObjectId(start_id)}},
+                                                                     {'publisher': ObjectId(profile_id)}]},
+                                                                 per_page_limit=per_page_limit)
+
         list_of_post_in_page = []
         for post_dict in list_of_page_post_dict:
             post_obj = Post(**post_dict)
@@ -152,11 +165,11 @@ def get_page_post(profile_id):
             list_of_post_in_page.append({'post': changed_post_dict})
 
         start_id, has_continue = pagination(list_of_page_post_dict, per_page_limit)
-        output_page_post = OutputPagePost(start_id=start_id, has_continue=has_continue, posts=list_of_post_in_page)
+        output_page_post = OutputPost(start_id=start_id, has_continue=has_continue, posts=list_of_post_in_page)
         return output_page_post
     except Exception as e:
         logger.error("get_page_post/base : " + str(e))
-        pass
+        raise Exception(str(e))
 
 
 def get_home_page(owner_id, start_id):
@@ -166,9 +179,8 @@ def get_home_page(owner_id, start_id):
         list_of_inclusive_posts_id = first_page_obj.inclusive_posts
         if start_id is None:
             list_of_inclusive_posts_dict = mongo_client_obj.fetch_data(Post,
-                                                                       {"$and": [
-                                                                           {'_id': {"$in": list_of_inclusive_posts_id}},
-                                                                       ]}, per_page_limit=per_page_limit)
+                                                                       {'_id': {"$in": list_of_inclusive_posts_id}},
+                                                                       per_page_limit=per_page_limit)
         else:
             list_of_inclusive_posts_dict = mongo_client_obj.fetch_data(Post,
                                                                        {"$and": [
@@ -197,7 +209,7 @@ def get_home_page(owner_id, start_id):
         return output_first_page
     except Exception as e:
         logger.error("get_home_page/base : " + str(e))
-        pass
+        raise Exception(str(e))
 
 
 def post_comment(post_id, comment_text, tags, author_id, date):
@@ -220,13 +232,21 @@ def post_comment(post_id, comment_text, tags, author_id, date):
         return output_comment
     except Exception as e:
         logger.error("post_comment/base : " + str(e))
-        pass
+        raise Exception(str(e))
 
 
-def get_comments(post_id):
+def get_comments(post_id, start_id):
     try:
-        list_of_comments = mongo_client_obj.fetch_data(Comment, {'post_id': ObjectId(post_id)},
-                                                       per_page_limit=per_page_limit)
+        if start_id is None:
+            list_of_comments = mongo_client_obj.fetch_data(Comment, {'post_id': ObjectId(post_id)},
+                                                           per_page_limit=per_page_limit)
+        else:
+            list_of_comments = mongo_client_obj.fetch_data(Comment,
+                                                           {"$and": [
+                                                               {'_id': {"$lt": ObjectId(start_id)}},
+                                                               {'post_id': ObjectId(post_id)}]},
+                                                           per_page_limit=per_page_limit)
+
         list_of_comments_dict = []
         for comment in list_of_comments:
             author_username = comment["author"]["username"]
@@ -243,13 +263,20 @@ def get_comments(post_id):
         return output_comment_obj
     except Exception as e:
         logger.error("get_comments/base" + str(e))
-        pass
+        raise Exception(str(e))
 
 
-def get_likes(post_id):
+def get_likes(post_id, start_id):
     try:
-        list_of_likes = mongo_client_obj.fetch_data(Like, {'post_id': ObjectId(post_id)},
-                                                    per_page_limit=per_page_limit)
+        if start_id is None:
+            list_of_likes = mongo_client_obj.fetch_data(Like, {'post_id': ObjectId(post_id)},
+                                                        per_page_limit=per_page_limit)
+        else:
+            list_of_likes = mongo_client_obj.fetch_data(Like,
+                                                        {"$and": [
+                                                            {'_id': {"$lt": ObjectId(start_id)}},
+                                                            {'post_id': ObjectId(post_id)}]},
+                                                        per_page_limit=per_page_limit)
         list_of_likes_dict = []
         for like in list_of_likes:
             author_username = like["author"]["username"]
@@ -263,7 +290,7 @@ def get_likes(post_id):
         return output_like_obj
     except Exception as e:
         logger.error("get_likes/base" + str(e))
-        pass
+        raise Exception(str(e))
 
 
 def like_post(author_id, post_id):
@@ -278,10 +305,10 @@ def like_post(author_id, post_id):
                                      {'_id': ObjectId(post_id)},
                                      {"$inc": {'likes': 1}},
                                      upsert=False)
-        return True
+        return "like"
     except Exception as e:
         logger.error("like_post/base" + str(e))
-        pass
+        raise Exception(str(e))
 
 
 def unlike_post(author_id, post_id):
@@ -294,32 +321,57 @@ def unlike_post(author_id, post_id):
                                      {'_id': ObjectId(post_id)},
                                      {"$inc": {'likes': -1}},
                                      upsert=False)
-        return True
+        return "unlike"
     except Exception as e:
         logger.error("unlike_post/base" + str(e))
-        pass
+        raise Exception(str(e))
+
+
+def request_to_follow(applicant_user, requested_user):
+    try:
+        request_obj = mongo_client_obj.insert_one_data(FollowRequest,
+                                                       {'applicant_user': applicant_user,
+                                                        'requested_user': requested_user})
+        return "requested"
+    except Exception as e:
+        logger.error("request_to_follow/base : " + str(e))
+        raise Exception(str(e))
+
+
+def follow(following_id, follower_id):
+    following_id = ObjectId(following_id)
+    follower_id = ObjectId(follower_id)
+
+    mongo_client_obj.insert_one_data(FollowingRelation,
+                                     {'following': following_id,
+                                      'follower': follower_id})
+    # increase the number of follower and following
+    follower_obj = mongo_client_obj.update_data(Profile,
+                                                {'_id': following_id},
+                                                {"$inc": {'number_of_follower': 1}},
+                                                upsert=False)
+    following_obj = mongo_client_obj.update_data(Profile,
+                                                 {'_id': follower_id},
+                                                 {"$inc": {'number_of_following': 1}},
+                                                 upsert=False)
+    return "followed"
 
 
 def start_to_follow(following_id, follower_id):
     try:
         following_id = ObjectId(following_id)
         follower_id = ObjectId(follower_id)
-        mongo_client_obj.insert_one_data(FollowingRelation,
-                                         {'following': following_id,
-                                          'follower': follower_id})
-        # increase the number of follower and following
-        follower_obj = mongo_client_obj.update_data(Profile,
-                                                    {'_id': following_id},
-                                                    {"$inc": {'number_of_follower': 1}},
-                                                    upsert=False)
-        following_obj = mongo_client_obj.update_data(Profile,
-                                                     {'_id': follower_id},
-                                                     {"$inc": {'number_of_following': 1}},
-                                                     upsert=False)
-        return True
+
+        follower_profile = mongo_client_obj.fetch_one_data(Profile,
+                                                           {'_id': follower_id})
+        if follower_profile.private:
+            return request_to_follow(applicant_user=following_id, requested_user=follower_id)
+        else:
+            return follow(following_id, follower_id)
+
     except Exception as e:
         logger.error("start_to_follow/base : " + str(e))
-        pass
+        raise Exception(str(e))
 
 
 def stop_to_follow(following_id, follower_id):
@@ -340,17 +392,65 @@ def stop_to_follow(following_id, follower_id):
                                                      {"$inc": {'number_of_following': -1}},
                                                      upsert=False)
 
-        return True
+        return "stop"
     except Exception as e:
         logger.error("stop_to_follow/base : " + str(e))
-        pass
+        raise Exception(str(e))
 
 
-def get_followers(following_id):
+def delete_following(auth, following_id):
     try:
-        list_of_followers = mongo_client_obj.fetch_data(FollowingRelation,
-                                                        {'following': ObjectId(following_id)},
-                                                        per_page_limit=per_page_limit)
+        auth = ObjectId(auth)
+        following_id = ObjectId(following_id)
+
+        deleted_count = mongo_client_obj.delete_one_data(FollowingRelation,
+                                                         {'following': following_id,
+                                                          'follower': auth})
+
+        following_obj = mongo_client_obj.update_data(Profile,
+                                                     {'_id': auth},
+                                                     {"$inc": {'number_of_following': -1}},
+                                                     upsert=False)
+
+        follower_obj = mongo_client_obj.update_data(Profile,
+                                                    {'_id': following_id},
+                                                    {"$inc": {'number_of_follower': -1}},
+                                                    upsert=False)
+        return "stop"
+
+    except Exception as e:
+        logger.error("delete_following/base : " + str(e))
+        raise Exception(str(e))
+
+
+def determine_follow_request(action, auth, following_id):
+    try:
+        request_obj = mongo_client_obj.delete_one_data(FollowRequest,
+                                                       {'requested_user': ObjectId(auth),
+                                                        'applicant_user': ObjectId(following_id)})
+        if action == "accept":
+            follow(following_id=following_id, follower_id=auth)
+            return "accept"
+        else:
+            return "reject"
+
+    except Exception as e:
+        logger.error("determine_follow_request/base : " + str(e))
+        raise Exception(str(e))
+
+
+def show_followers(user_id, start_id):
+    try:
+        if start_id is None:
+            list_of_followers = mongo_client_obj.fetch_data(FollowingRelation,
+                                                            {'following': ObjectId(user_id)},
+                                                            per_page_limit=per_page_limit)
+        else:
+            list_of_followers = mongo_client_obj.fetch_data(FollowingRelation,
+                                                            {"$and": [
+                                                                {'_id': {"$lt": ObjectId(start_id)}},
+                                                                {'following': ObjectId(user_id)}]},
+                                                            per_page_limit=per_page_limit)
         list_of_followers_id = []
         for follower in list_of_followers:
             list_of_followers_id.append(follower.get("follower"))
@@ -366,16 +466,45 @@ def get_followers(following_id):
         start_id, has_continue = pagination(list_of_followers, per_page_limit)
         output_followers_obj = OutputFollowers(start_id=start_id, has_continue=has_continue, followers=followers)
         return output_followers_obj
+
+    except Exception as e:
+        logger.error("show_followers/base : " + str(e))
+        raise Exception(str(e))
+
+
+def get_followers(auth, user_id, start_id):
+    try:
+        profile_of_user = mongo_client_obj.fetch_one_data(Profile,
+                                                          {'_id': ObjectId(user_id)})
+        if profile_of_user.private:
+            existence_of_follow_relation = mongo_client_obj.fetch_one_data(FollowingRelation,
+                                                                           {"$and": [
+                                                                               {'following': ObjectId(auth)},
+                                                                               {'follower': ObjectId(user_id)}
+                                                                           ]})
+            if existence_of_follow_relation == "Does Not Exist":
+                return "not allowed"
+            else:
+                return show_followers(user_id, start_id)
+        else:
+            return show_followers(user_id, start_id)
     except Exception as e:
         logger.error("get_followers/base : " + str(e))
-        pass
+        raise Exception(str(e))
 
 
-def get_followings(follower_id):
+def show_followings(user_id, start_id):
     try:
-        list_of_followings = mongo_client_obj.fetch_data(FollowingRelation,
-                                                         {'follower': ObjectId(follower_id)},
-                                                         per_page_limit=per_page_limit)
+        if start_id is None:
+            list_of_followings = mongo_client_obj.fetch_data(FollowingRelation,
+                                                             {'follower': ObjectId(user_id)},
+                                                             per_page_limit=per_page_limit)
+        else:
+            list_of_followings = mongo_client_obj.fetch_data(FollowingRelation,
+                                                             {"$and": [
+                                                                 {'_id': {"$lt": ObjectId(start_id)}},
+                                                                 {'follower': ObjectId(user_id)}]},
+                                                             per_page_limit=per_page_limit)
         list_of_followings_id = []
         for following in list_of_followings:
             list_of_followings_id.append(following.get("following"))
@@ -391,6 +520,226 @@ def get_followings(follower_id):
         start_id, has_continue = pagination(list_of_followings, per_page_limit)
         output_followings_obj = OutputFollowings(start_id=start_id, has_continue=has_continue, followings=followings)
         return output_followings_obj
+
+    except Exception as e:
+        logger.error("show_followings/base : " + str(e))
+        raise Exception(str(e))
+
+
+def get_followings(auth, user_id, start_id):
+    try:
+        profile_of_user = mongo_client_obj.fetch_one_data(Profile,
+                                                          {'_id': ObjectId(user_id)})
+        if profile_of_user.private:
+            existence_of_follow_relation = mongo_client_obj.fetch_one_data(FollowingRelation,
+                                                                           {"$and": [
+                                                                               {'following': ObjectId(auth)},
+                                                                               {'follower': ObjectId(user_id)}
+                                                                           ]})
+            if existence_of_follow_relation == "Does Not Exist":
+                return "not allowed"
+            else:
+                return show_followings(user_id, start_id)
+        else:
+            return show_followings(user_id, start_id)
     except Exception as e:
         logger.error("get_followings/base : " + str(e))
-        pass
+        raise Exception(str(e))
+
+
+def get_applicant_users(auth, start_id):
+    try:
+        if start_id is None:
+            list_of_follow_request = mongo_client_obj.fetch_data(FollowRequest,
+                                                                 {'requested_user': ObjectId(auth)},
+                                                                 per_page_limit=per_page_limit)
+        else:
+            list_of_follow_request = mongo_client_obj.fetch_data(FollowRequest,
+                                                                 {"$and": [
+                                                                     {'_id': {"$lt": ObjectId(start_id)}},
+                                                                     {'requested_user': ObjectId(auth)}
+                                                                 ]},
+                                                                 per_page_limit=per_page_limit)
+        list_of_applicant_user_id = []
+        for applicant_dict in list_of_follow_request:
+            list_of_applicant_user_id.append(applicant_dict['applicant_user'])
+
+        list_of_applicant_profile = mongo_client_obj.fetch_data(Profile,
+                                                                {'_id': {"$in": list_of_applicant_user_id}})
+        applicant_users = []
+        for applicant_user in list_of_applicant_profile:
+            applicant_user_obj = Profile(**applicant_user)
+            profile_dict = make_dict_embedded_profile(applicant_user_obj)
+            applicant_users.append(profile_dict)
+
+        start_id, has_continue = pagination(list_of_follow_request, per_page_limit)
+        output_applicant_users_obj = OutputFollowers(start_id=start_id, has_continue=has_continue,
+                                                     followers=applicant_users)
+        return output_applicant_users_obj
+
+    except Exception as e:
+        logger.error("get_applicant_users/base : " + str(e))
+        raise Exception(str(e))
+
+
+# TODO: write a validator for it
+def block_or_unblock_following(action, auth, following_id):
+    if action == "block":
+        try:
+            blocking = mongo_client_obj.update_data(FollowingRelation,
+                                                    {"$and": [
+                                                        {'following': ObjectId(following_id)},
+                                                        {'follower': ObjectId(auth)}]},
+                                                    {"$set": {'block': True}},
+                                                    upsert=False)
+            # remove comments and likes
+            post_list_of_blocker = mongo_client_obj.fetch_data(Post,
+                                                               {'publisher': ObjectId(auth)})
+            post_ids = []
+            for post in post_list_of_blocker:
+                post_ids.append(post["_id"])
+            print("post:ids : ", post_ids)
+
+            # find profile of blocked user
+            blocked_profile = mongo_client_obj.fetch_one_data(Profile,
+                                                              {'_id': ObjectId(following_id)})
+            blocked_username = blocked_profile.username
+
+            # decrease number of like
+            target_posts = mongo_client_obj.fetch_data(Like,
+                                                       {"$and": [
+                                                          {'author.username': blocked_username},
+                                                          {'post_id': {"$in": post_ids}}
+                                                       ]})
+            target_posts_ids = []
+            for post in target_posts:
+                target_posts_ids.append(post["_id"])
+
+            # TODO : complete this method -> decrease number of like
+            # decrease_like = mongo_client_obj.update_data(Post,
+            #                                              {'_id': {"$in": target_posts_ids}},
+            #                                              {"$inc": {'like': -1}},
+            #                                              upsert=False)
+            remove_like_list_of_blocked_user = mongo_client_obj.remove_data(Like,
+                                                                            {'_id': {"$in": target_posts_ids}})
+
+            remove_comment_list_of_blocked_user = mongo_client_obj.remove_data(Comment,
+                                                                               {"$and": [
+                                                                                   {'author.username': blocked_username},
+                                                                                   {'post_id': {"$in": post_ids}}
+                                                                               ]})
+
+            return "blocked"
+        except Exception as e:
+            logger.error("block/base : " + str(e))
+            raise Exception(str(e))
+
+    elif action == "unblock":
+        try:
+            blocking = mongo_client_obj.update_data(FollowingRelation,
+                                                    {"$and": [
+                                                        {'following': ObjectId(following_id)},
+                                                        {'follower': ObjectId(auth)}]},
+                                                    {"$set": {'block': False}},
+                                                    upsert=False)
+            return "unblocked"
+
+        except Exception as e:
+            logger.error("unblock/base : " + str(e))
+            raise Exception(str(e))
+
+
+def get_blocked_following(auth, start_id):
+    try:
+        if start_id is None:
+            list_of_blocked_following = mongo_client_obj.fetch_data(FollowingRelation,
+                                                                    {"$and": [
+                                                                        {'follower': ObjectId(auth)},
+                                                                        {'block': True}]},
+                                                                    per_page_limit=per_page_limit)
+        else:
+            list_of_blocked_following = mongo_client_obj.fetch_data(FollowingRelation,
+                                                                    {"$and": [
+                                                                        {'_id': {"$lt": ObjectId(start_id)}},
+                                                                        {'follower': ObjectId(auth)},
+                                                                        {'block': True}]},
+                                                                    per_page_limit=per_page_limit)
+        list_of_blocked_followings_id = []
+        for blocked_following in list_of_blocked_following:
+            list_of_blocked_followings_id.append(blocked_following.get("following"))
+
+        list_of_blocked_followings_profile = mongo_client_obj.fetch_data(Profile,
+                                                                 {'_id': {"$in": list_of_blocked_followings_id}})
+
+        blocked_followings = []
+        for blocked_following_profile in list_of_blocked_followings_profile:
+            profile_obj = Profile(**blocked_following_profile)
+            profile_dict = make_dict_embedded_profile(profile_obj)
+            blocked_followings.append(profile_dict)
+
+        start_id, has_continue = pagination(list_of_blocked_following, per_page_limit)
+        output_blocked_followings_obj = OutputFollowings(start_id=start_id, has_continue=has_continue,
+                                                         followings=blocked_followings)
+        return output_blocked_followings_obj
+
+    except Exception as e:
+        logger.error("get_blocked_following/base : " + str(e))
+        raise Exception(str(e))
+
+
+def search_tags(tag, start_id):
+    try:
+        if tag[0] == '#':
+            tag = tag[1:]
+
+        if start_id is None:
+            list_of_founded_post_dict = mongo_client_obj.fetch_data(Post,
+                                                                    {'tags': {"$regex": "^" + tag + "*"}},
+                                                                    per_page_limit=per_page_limit)
+        else:
+            list_of_founded_post_dict = mongo_client_obj.fetch_data(Post,
+                                                                    {"$and": [
+                                                                        {'_id': {"$lt": ObjectId(start_id)}},
+                                                                        {'tags': {"$regex": "^" + tag + "*"}}]},
+                                                                    per_page_limit=per_page_limit)
+        list_of_post = []
+        for post_dict in list_of_founded_post_dict:
+            post_obj = Post(**post_dict)
+            founded_post_dict = make_dict_embedded_post(post_obj)
+            list_of_post.append({'post': founded_post_dict})
+
+        start_id, has_continue = pagination(list_of_founded_post_dict, per_page_limit)
+        output_founded_post = OutputPagePost(start_id=start_id, has_continue=has_continue, posts=list_of_post)
+        return output_founded_post
+
+    except Exception as e:
+        logger.error("search_tags/base : " + str(e))
+        raise Exception(str(e))
+
+
+def search_account(username, start_id):
+    try:
+        if start_id is None:
+            list_of_founded_profile = mongo_client_obj.fetch_data(Profile,
+                                                                  {'username': {"$regex": "^" + username + "*"}},
+                                                                  per_page_limit=per_page_limit)
+        else:
+            list_of_founded_profile = mongo_client_obj.fetch_data(Profile,
+                                                                  {"$and": [
+                                                                      {'_id': {"$lt": ObjectId(start_id)}},
+                                                                      {'username': {"$regex": "^" + username + "*"}}
+                                                                  ]}, per_page_limit=per_page_limit)
+
+        profiles = []
+        for profile_dict in list_of_founded_profile:
+            profile_obj = Profile(**profile_dict)
+            founded_profile_dict = make_dict_embedded_profile(profile_obj)
+            profiles.append(founded_profile_dict)
+
+        start_id, has_continue = pagination(list_of_founded_profile, per_page_limit)
+        output_founded_profile_obj = OutputFollowers(start_id=start_id, has_continue=has_continue, followers=profiles)
+        return output_founded_profile_obj
+
+    except Exception as e:
+        logger.error("search_account/base : " + str(e))
+        raise Exception(str(e))

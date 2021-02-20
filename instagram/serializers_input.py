@@ -21,6 +21,7 @@ class ProfileValidator(BaseModel):
     first_name: Optional[str] = Field(None, min_length=2, max_length=50, extra={'strip_whitespace': True})
     last_name: Optional[str] = Field(None, min_length=2, max_length=50, extra={'strip_whitespace': True})
     picture: Optional[str] = Field(None, min_length=2, max_length=50, extra={'strip_whitespace': True})
+    private: bool
 
     @validator('username', allow_reuse=True)
     def check_username_len_and_char(cls, v):
@@ -32,7 +33,16 @@ class ProfileValidator(BaseModel):
 
 
 class FollowingRelationValidator(BaseModel):
-    follower: str
+    follower: constr(min_length=24, max_length=24, strip_whitespace=True)
+
+
+class DeleteFollowingValidator(BaseModel):
+    following: constr(min_length=24, max_length=24, strip_whitespace=True)
+
+
+class DetermineFollowRequest(BaseModel):
+    action: Literal['accept', 'reject']
+    follower_id: constr(min_length=24, max_length=24, strip_whitespace=True)
 
 
 # POST SERIALIZERS
@@ -52,4 +62,9 @@ class LikeValidator(BaseModel):
 
 class PagePostsValidator(BaseModel):
     profile_id: constr(min_length=24, max_length=24, strip_whitespace=True)
+    start_id: Optional[str] = Field(None, min_length=24, max_length=24, extra={'strip_whitespace': True})
+
+
+class SearchValidator(BaseModel):
+    search_value: constr(min_length=3, max_length=50, strip_whitespace=True)
     start_id: Optional[str] = Field(None, min_length=24, max_length=24, extra={'strip_whitespace': True})

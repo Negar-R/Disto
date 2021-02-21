@@ -8,6 +8,7 @@ from rest_framework import status
 from LikeInstaProject import mongo_client_obj
 from LikeInstaProject.settings import per_page_limit
 from instagram.commons import pagination
+from instagram.tasks import remove_comments_of_blocked_user, remove_likes_of_blocked_user
 from instagram.models import Profile, Post, FollowingRelation, HomePage, Comment, Like, FollowRequest
 from instagram.out_models import OutputPost, EmbeddedUser, EmbeddedPost, EmbeddedComment, OutputProfile, \
     OutputHomePage, OutputFollowers, OutputFollowings, OutputPagePost, OutputComment, OutputLike
@@ -586,13 +587,18 @@ def get_applicant_users(auth, start_id):
 def block_or_unblock_following(action, auth, following_id):
     if action == "block":
         try:
-            blocking = mongo_client_obj.update_data(FollowingRelation,
-                                                    {"$and": [
-                                                        {'following': ObjectId(following_id)},
-                                                        {'follower': ObjectId(auth)}]},
-                                                    {"$set": {'block': True}},
-                                                    upsert=False)
-            # remove comments and likes
+            # blocking = mongo_client_obj.update_data(FollowingRelation,
+            #                                         {"$and": [
+            #                                             {'following': ObjectId(following_id)},
+            #                                             {'follower': ObjectId(auth)}]},
+            #                                         {"$set": {'block': True}},
+            #                                         upsert=False)
+
+            # find profile of blocked user
+            blocked_profile = mongo_client_obj.fetch_one_data(Profile,
+                                                              {'_id': ObjectId(following_id)})
+            blocked_username = blocked_profile.username
+
             post_list_of_blocker = mongo_client_obj.fetch_data(Post,
                                                                {'publisher': ObjectId(auth)})
             post_ids = []
@@ -600,36 +606,12 @@ def block_or_unblock_following(action, auth, following_id):
                 post_ids.append(post["_id"])
             print("post:ids : ", post_ids)
 
-            # find profile of blocked user
-            blocked_profile = mongo_client_obj.fetch_one_data(Profile,
-                                                              {'_id': ObjectId(following_id)})
-            blocked_username = blocked_profile.username
-
-            # decrease number of like
-            target_posts = mongo_client_obj.fetch_data(Like,
-                                                       {"$and": [
-                                                          {'author.username': blocked_username},
-                                                          {'post_id': {"$in": post_ids}}
-                                                       ]})
-            target_posts_ids = []
-            for post in target_posts:
-                target_posts_ids.append(post["_id"])
-
-            # TODO : complete this method -> decrease number of like
-            # decrease_like = mongo_client_obj.update_data(Post,
-            #                                              {'_id': {"$in": target_posts_ids}},
-            #                                              {"$inc": {'like': -1}},
-            #                                              upsert=False)
-            remove_like_list_of_blocked_user = mongo_client_obj.remove_data(Like,
-                                                                            {'_id': {"$in": target_posts_ids}})
-
-            remove_comment_list_of_blocked_user = mongo_client_obj.remove_data(Comment,
-                                                                               {"$and": [
-                                                                                   {'author.username': blocked_username},
-                                                                                   {'post_id': {"$in": post_ids}}
-                                                                               ]})
+            # TODO : make the error correct
+            remove_comments_of_blocked_user.delay(blocked_username, post_ids)
+            remove_likes_of_blocked_user.delay(blocked_username, post_ids)
 
             return "blocked"
+
         except Exception as e:
             logger.error("block/base : " + str(e))
             raise Exception(str(e))

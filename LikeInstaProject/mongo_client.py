@@ -58,18 +58,24 @@ class MongoClientClass:
         result = self.mongo_collection.remove(kwargs)
         return result
 
-    def update_data(self, modelName, filter_query, update_query, upsert):
+    def update_data(self, modelName, filter_query, update_query, upsert, **kwargs):
         db_collection = modelName._get_collection_name()
         self.mongo_collection = self.mongo_db[db_collection]
-        updated_dict = self.mongo_collection.find_one_and_update(filter_query,
-                                                                 update_query,
-                                                                 return_document=ReturnDocument.AFTER,
-                                                                 upsert=upsert)
-        if updated_dict:
-            obj = modelName(**updated_dict)
-            return obj
+        if kwargs.get("multi"):
+            updated_dict = self.mongo_collection.update_many(filter_query,
+                                                             update_query,
+                                                             upsert=upsert)
+            return True
         else:
-            raise Exception("Does Not Exist")
+            updated_dict = self.mongo_collection.find_one_and_update(filter_query,
+                                                                     update_query,
+                                                                     return_document=ReturnDocument.AFTER,
+                                                                     upsert=upsert)
+            if updated_dict:
+                obj = modelName(**updated_dict)
+                return obj
+            else:
+                raise Exception("Does Not Exist")
 
 
 mongo_client_obj = MongoClientClass(MONGO_URI)

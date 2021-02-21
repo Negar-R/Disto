@@ -153,7 +153,7 @@ LOGGING = {
             'level': 'ERROR',
         },
         'instagram': {
-            'handlers': ['instagram_file'],
+            'handlers': ['console', 'instagram_file'],
             'propagate': True,
             'level': 'INFO'
         },
@@ -180,5 +180,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# celery config
+CELERY_BROKER_URL = 'amqp://localhost'
+
 # Pagination Configuration
-per_page_limit = 5
+per_page_limit = 3

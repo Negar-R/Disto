@@ -50,10 +50,10 @@ def create_profile_version_1(data):
         username = data.get("username")
         first_name = data.get("first_name")
         last_name = data.get("last_name")
-        picture = data.get("picture")
+        # picture = data.get("picture")
         private = data.get("private")
 
-        output_profile_obj = create_profile(username, first_name, last_name, picture, private)
+        output_profile_obj = create_profile(username, first_name, last_name, private)
         serializer = ProfileSerializerVersionOne(output_profile_obj)
         response = manage_response(status_info="ok",
                                    data={'profile': serializer.data})
@@ -74,10 +74,10 @@ def update_profile_version_1(profile_id, data):
         username = data.get("username")
         first_name = data.get("first_name")
         last_name = data.get("last_name")
-        picture = data.get("picture")
+        # picture = data.get("picture")
         private = data.get("private")
 
-        profile_obj = update_profile(profile_id, username, first_name, last_name, picture, private)
+        profile_obj = update_profile(profile_id, username, first_name, last_name, private)
         serializer = ProfileSerializerVersionOne(profile_obj)
         response = manage_response(status_info="ok",
                                    data={'profile': serializer.data})

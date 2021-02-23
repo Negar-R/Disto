@@ -2,7 +2,8 @@ from pydantic.class_validators import Optional
 from pydantic import BaseModel, validator, constr, Field
 from pydantic.typing import Literal
 
-from instagram.models import Profile, FollowingRelation, Post
+from rest_framework import serializers
+
 import re
 
 
@@ -20,7 +21,7 @@ class ProfileValidator(BaseModel):
     username: constr(min_length=5, max_length=100, strip_whitespace=True)
     first_name: Optional[str] = Field(None, min_length=2, max_length=50, extra={'strip_whitespace': True})
     last_name: Optional[str] = Field(None, min_length=2, max_length=50, extra={'strip_whitespace': True})
-    picture: Optional[str] = Field(None, min_length=2, max_length=50, extra={'strip_whitespace': True})
+    # picture: Optional[str] = Field(None, min_length=2, max_length=50, extra={'strip_whitespace': True})
     private: bool
 
     @validator('username', allow_reuse=True)
@@ -68,3 +69,8 @@ class PagePostsValidator(BaseModel):
 class SearchValidator(BaseModel):
     search_value: constr(min_length=3, max_length=50, strip_whitespace=True)
     start_id: Optional[str] = Field(None, min_length=24, max_length=24, extra={'strip_whitespace': True})
+
+
+class UploadPictureSerializer(serializers.Serializer):
+    profile_id = serializers.CharField(max_length=24, min_length=24)
+    image = serializers.ImageField()

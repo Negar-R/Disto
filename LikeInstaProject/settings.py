@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
-import mongoengine
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -180,8 +180,12 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# Foe uploaded files
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
+
 # celery config
-CELERY_BROKER_URL = 'amqp://localhost'
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379'
 
 # Pagination Configuration
 per_page_limit = 3

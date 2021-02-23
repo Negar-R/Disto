@@ -62,13 +62,12 @@ def make_dict_embedded_comment(author_username, author_picture, comment_text, da
     return comment_dict
 
 
-def create_profile(username, first_name, last_name, picture, private):
+def create_profile(username, first_name, last_name, private):
     try:
         data = {
             'username': username,
             'first_name': first_name,
             'last_name': last_name,
-            'picture': picture,
             'private': private,
             'date_of_join': time.time()
         }
@@ -81,13 +80,12 @@ def create_profile(username, first_name, last_name, picture, private):
         raise Exception(str(e))
 
 
-def update_profile(profile_id, username, first_name, last_name, picture, private):
+def update_profile(profile_id, username, first_name, last_name, private):
     try:
         data = {
             'username': username,
             'first_name': first_name,
             'last_name': last_name,
-            'picture': picture,
             'private': private
         }
         profile_obj = mongo_client_obj.update_data(Profile,
@@ -607,8 +605,8 @@ def block_or_unblock_following(action, auth, following_id):
             print("post:ids : ", post_ids)
 
             # TODO : make the error correct
-            remove_comments_of_blocked_user.delay(blocked_username, post_ids)
-            remove_likes_of_blocked_user.delay(blocked_username, post_ids)
+            remove_comments_of_blocked_user.delay(blocked_username=blocked_username, post_ids=2)
+            # remove_likes_of_blocked_user.delay(blocked_username, post_ids)
 
             return "blocked"
 

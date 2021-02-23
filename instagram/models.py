@@ -23,6 +23,13 @@ class Profile(Document):
     }
 
 
+class UploadPicture(Document):
+    _id = ObjectIdField()
+    profile_id = ObjectIdField()
+
+    image = ImageField()
+
+
 class FollowRequest(Document):
     _id = ObjectIdField()
     requested_user = ObjectIdField()

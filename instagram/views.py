@@ -11,7 +11,7 @@ from instagram.methods_version_one import get_profile_version_1, create_profile_
     get_followers_version_1, get_followings_version_1, like_or_unlike_post_version_1, get_page_posts_version_1, \
     get_comments_version_1, get_likes_version_1, search_tags_version_1, search_account_version_1, \
     determine_follow_request_version_1, get_applicant_users_version_1, delete_following_version_1, \
-    blocking_or_unblocking_following_version_1, get_blocked_following_version_1
+    blocking_or_unblocking_following_version_1, get_blocked_following_version_1, delete_picture_version_1
 from instagram.out_models import OutputGeneral
 from instagram.serializers_input import BodyStructureValidator
 from instagram.serializers_output import GeneralSerializerVersionOne
@@ -125,6 +125,9 @@ class InstagramAPIView(APIView):
 
                 elif method == "searchAccount":
                     response = search_account_version_1(data)
+
+                elif method == "deletePicture":
+                    response = delete_picture_version_1(data)
 
                 serialized_output_obj = response.get("data")
                 general_output_obj = OutputGeneral(method=method,

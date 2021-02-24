@@ -10,14 +10,17 @@ logger = logging.getLogger(__name__)
 
 
 @shared_task()
-def remove_comments_of_blocked_user(blocked_username, post_ids):
+def remove_comments_of_blocked_user(*args, **kwargs):
+    print("remove _comments :: ", args, " ** ", type(args), " ^ ", kwargs)
     try:
-        mongo_client_obj.remove_data(Comment,
-                                     {"$and": [
-                                        {'author.username': blocked_username},
-                                        {'post_id': {"$in": post_ids}}
-                                       ]})
+        # print("Im here : ", post_ids)
+        # mongo_client_obj.remove_data(Comment,
+        #                              {"$and": [
+        #                                 {'author.username': blocked_username},
+        #                                 {'post_id': {"$in": post_ids}}
+        #                                ]})
         print("hale ;) ")
+        return "OK"
     except Exception as e:
         logger.error("remove_comments_of_blocked_user/celery : " + str(e))
         raise Exception

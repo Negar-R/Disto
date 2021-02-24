@@ -15,7 +15,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"data\":\r\n    {\r\n        \"username\": \"Arm@n\",\r\n        \"first_name\": \"arman\",\r\n        \"last_name\": \"babaei\"\r\n    },\r\n\"method\": \"create_profile\"\r\n}",
+							"raw": "{\r\n    \"method\": \"createProfile\",\r\n    \"data\":\r\n    {\r\n        \"username\": \"BaranSahab\",\r\n        \r\n        \"last_name\": \"sahab\",\r\n        \"picture\": \"baran.jpg\"\r\n    },\r\n    \"auth\": \"600e7d8b9ce5d122e54fb16a\",\r\n    \"platform\": \"Android\",\r\n    \"lang_code\": \"EN\",\r\n    \"ver_api\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -23,13 +23,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{url}}/instagram/profile",
+							"raw": "{{url}}/main/instagram",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
-								"instagram",
-								"profile"
+								"main",
+								"instagram"
 							]
 						}
 					},
@@ -38,17 +38,25 @@
 				{
 					"name": "get_profile",
 					"request": {
-						"method": "GET",
+						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"method\": \"getProfile\", \r\n    \"data\": {\r\n        \"profile_id\": \"60112e1dedae0a4bdb8e0a73\"\r\n    },\r\n    \"auth\": \"600d504d6d377aedf33b06d7\",\r\n    \"platform\": \"Android\",\r\n    \"lang_code\": \"EN\",\r\n    \"ver_api\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "{{url}}/instagram/profile/Arm@n",
+							"raw": "{{url}}/main/instagram",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
-								"instagram",
-								"profile",
-								"Arm@n"
+								"main",
+								"instagram"
 							]
 						}
 					},
@@ -61,7 +69,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"data\":\r\n    {\r\n        \"username\": \"SarA\",\r\n        \"last_name\": \"gholami\",\r\n        \"first_name\": \"sara\"\r\n    },\r\n\"method\": \"update_profile\",\r\n\"obj_id\": \"600e7d8b9ce5d122e54fb16a\"\r\n}",
+							"raw": "{\r\n    \"method\": \"updateProfile\",\r\n    \"data\":\r\n    {\r\n        \"username\": \"SArA1380\",\r\n        \"last_name\": \"gholami\",\r\n        \"first_name\": \"sara\",\r\n        \"picture\": \"sara.jpg\",\r\n        \"private\": false\r\n    },\r\n    \"auth\": \"600e7d8b9ce5d122e54fb16a\",\r\n    \"platform\": \"Android\",\r\n    \"lang_code\": \"EN\",\r\n    \"ver_api\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -69,26 +77,26 @@
 							}
 						},
 						"url": {
-							"raw": "{{url}}/instagram/profile",
+							"raw": "{{url}}/main/instagram",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
-								"instagram",
-								"profile"
+								"main",
+								"instagram"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "follow",
+					"name": "get_followers",
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"follower\": \"600fbb7fa684af6cd4ab5abf\"}",
+							"raw": "{\r\n    \"method\": \"getFollowers\",\r\n    \"data\": {\r\n        \"user_id\": \"600e7d8b9ce5d122e54fb16a\",\r\n        \"start_id\": null\r\n    },\r\n    \"auth\": \"6017aa0c452816f3547b18a7\",\r\n    \"platform\": \"Android\",\r\n    \"lang_code\": \"EN\",\r\n    \"ver_api\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -96,14 +104,262 @@
 							}
 						},
 						"url": {
-							"raw": "{{url}}/instagram/follow/600e7d8b9ce5d122e54fb16a",
+							"raw": "{{url}}/main/instagram",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
-								"instagram",
-								"follow",
-								"600e7d8b9ce5d122e54fb16a"
+								"main",
+								"instagram"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "start_to_follow",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"method\": \"startToFollow\",\r\n    \"data\":\r\n    {\r\n        \"follower\": \"600d504d6d377aedf33b06d7\"\r\n    },\r\n    \"auth\": \"600e7d8b9ce5d122e54fb16a\",\r\n    \"platform\": \"Android\",\r\n    \"lang_code\": \"EN\",\r\n    \"ver_api\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/main/instagram",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"main",
+								"instagram"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "stop_to_follow",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"method\": \"stopToFollow\",\r\n    \"data\":\r\n    {\r\n        \"follower\": \"601548fd2a4a72cf43579344\"\r\n    },\r\n    \"auth\": \"6017aa0c452816f3547b18a7\",\r\n    \"platform\": \"Android\",\r\n    \"lang_code\": \"EN\",\r\n    \"ver_api\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/main/instagram",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"main",
+								"instagram"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_followings",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"method\": \"getFollowings\",\r\n    \"data\": {\r\n        \"user_id\": \"602ba86fd1df9598bcefd31a\",\r\n        \"start_id\": null\r\n    },\r\n    \"auth\": \"6017aa0c452816f3547b18a7\",\r\n    \"platform\": \"Android\",\r\n    \"lang_code\": \"EN\",\r\n    \"ver_api\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/main/instagram",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"main",
+								"instagram"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_applicant_users",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"method\": \"getApplicantUsers\",\r\n    \"data\": {\r\n        \"start_id\": null\r\n    },\r\n    \"auth\": \"602ba86fd1df9598bcefd31a\",\r\n    \"platform\": \"Android\",\r\n    \"lang_code\": \"EN\",\r\n    \"ver_api\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/main/instagram",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"main",
+								"instagram"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "determine_follow_request",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"method\": \"determineFollowRequest\",\r\n    \"data\": {\r\n        \"action\": \"reject\",\r\n        \"follower_id\": \"6017aa0c452816f3547b18a7\",\r\n        \"last_id\": null\r\n    },\r\n    \"auth\": \"602ba86fd1df9598bcefd31a\",\r\n    \"platform\": \"Android\",\r\n    \"lang_code\": \"EN\",\r\n    \"ver_api\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/main/instagram",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"main",
+								"instagram"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete_following",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"method\": \"deleteFollowing\",\r\n    \"data\":\r\n    {\r\n        \"following\": \"600e7d8b9ce5d122e54fb16a\"\r\n    },\r\n    \"auth\": \"600d504d6d377aedf33b06d7\",\r\n    \"platform\": \"Android\",\r\n    \"lang_code\": \"EN\",\r\n    \"ver_api\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/main/instagram",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"main",
+								"instagram"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "block_following",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"method\": \"blocking\",\r\n    \"data\":\r\n    {\r\n        \"action\": \"unblock\",\r\n        \"follower_id\": \"602ba86fd1df9598bcefd31a\"\r\n    },\r\n    \"auth\": \"6017aa0c452816f3547b18a7\",\r\n    \"platform\": \"Android\",\r\n    \"lang_code\": \"EN\",\r\n    \"ver_api\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/main/instagram",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"main",
+								"instagram"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_blocked_following",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"method\": \"getBlockedFollowings\",\r\n    \"data\": {\r\n        \"start_id\": null\r\n    },\r\n    \"auth\": \"602ba86fd1df9598bcefd31a\",\r\n    \"platform\": \"Android\",\r\n    \"lang_code\": \"EN\",\r\n    \"ver_api\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/main/instagram",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"main",
+								"instagram"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "upload_picture",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/C:/Users/Negar/Pictures/Screenshots/girl_1.jpg"
+								},
+								{
+									"key": "profile_id",
+									"value": "6034dbcaa0add2d46c9e13e6",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{url}}/main/upload_picture",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"main",
+								"upload_picture"
 							]
 						}
 					},
@@ -121,7 +377,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"caption\": \"I wanna try to make a doc using postman\",\r\n    \"tags\": [\"postman\", \"doc\"],\r\n    \"publisher\": \"600fbb7fa684af6cd4ab5abf\"\r\n}",
+							"raw": "{\r\n    \"method\": \"createPost\",\r\n    \"data\":\r\n    {\r\n        \"image\": \"good_day.jpg\",\r\n        \"caption\": \"expect to increase the number of posts\"\r\n    },\r\n    \"auth\": \"600d504d6d377aedf33b06d7\",\r\n    \"platform\": \"Android\",\r\n    \"lang_code\": \"EN\",\r\n    \"ver_api\":1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -129,107 +385,26 @@
 							}
 						},
 						"url": {
-							"raw": "{{url}}/instagram/post",
+							"raw": "{{url}}/main/instagram",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
-								"instagram",
-								"post"
+								"main",
+								"instagram"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "see_first_page",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{url}}/instagram/page/600e7d8b9ce5d122e54fb16a",
-							"host": [
-								"{{url}}"
-							],
-							"path": [
-								"instagram",
-								"page",
-								"600e7d8b9ce5d122e54fb16a"
-							]
-						}
-					},
-					"response": [
-						{
-							"name": "see_first_page",
-							"originalRequest": {
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "{{url}}/instagram/page/600e7d8b9ce5d122e54fb16a",
-									"host": [
-										"{{url}}"
-									],
-									"path": [
-										"instagram",
-										"page",
-										"600e7d8b9ce5d122e54fb16a"
-									]
-								}
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "json",
-							"header": [
-								{
-									"key": "Date",
-									"value": "Tue, 26 Jan 2021 07:00:39 GMT"
-								},
-								{
-									"key": "Server",
-									"value": "WSGIServer/0.2 CPython/3.9.1"
-								},
-								{
-									"key": "Content-Type",
-									"value": "application/json"
-								},
-								{
-									"key": "Vary",
-									"value": "Accept, Cookie"
-								},
-								{
-									"key": "Allow",
-									"value": "GET, HEAD, OPTIONS"
-								},
-								{
-									"key": "X-Frame-Options",
-									"value": "DENY"
-								},
-								{
-									"key": "Content-Length",
-									"value": "161"
-								},
-								{
-									"key": "X-Content-Type-Options",
-									"value": "nosniff"
-								},
-								{
-									"key": "Referrer-Policy",
-									"value": "same-origin"
-								}
-							],
-							"cookie": [],
-							"body": "[\n    {\n        \"publisher\": \"600fbb7fa684af6cd4ab5abf\",\n        \"image\": null,\n        \"caption\": \"I wanna try to make a doc using postman\",\n        \"tags\": [\n            \"postman\",\n            \"doc\"\n        ],\n        \"comments\": null,\n        \"likes\": null\n    }\n]"
-						}
-					]
-				},
-				{
-					"name": "like_reaction",
+					"name": "get_home_page",
 					"request": {
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"reaction_kind\": \"like\"\r\n}",
+							"raw": "{\r\n    \"method\": \"getHomePage\",\r\n    \"data\": {\r\n        \"start_id\": \"60154a25bef541c82acf6d5a\"\r\n    },\r\n    \"auth\": \"601fd3e09a55cf69633515c7\",\r\n    \"platform\": \"Android\",\r\n    \"lang_code\": \"EN\",\r\n    \"ver_api\": 1\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -237,14 +412,40 @@
 							}
 						},
 						"url": {
-							"raw": "{{url}}/instagram/reaction/600fbd3ea684af6cd4ab5ac1",
+							"raw": "{{url}}/main/instagram",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
-								"instagram",
-								"reaction",
-								"600fbd3ea684af6cd4ab5ac1"
+								"main",
+								"instagram"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "like",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"method\": \"like\",\r\n    \"data\":\r\n    {\r\n        \"post_id\": \"60214749946165faf15772db\"\r\n    },\r\n    \"auth\": \"600d504d6d377aedf33b06d7\",\r\n    \"platform\": \"Android\",\r\n    \"lang_code\": \"EN\",\r\n    \"ver_api\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/main/instagram",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"main",
+								"instagram"
 							]
 						}
 					},
@@ -257,7 +458,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"reaction_kind\": \"comment\",\r\n    \"data\":\r\n    {\r\n        \"comment_post\": \"hope to post more in the feature\",\r\n        \"author_id\": \"600d504d6d377aedf33b06d7\"\r\n    }\r\n}\r\n",
+							"raw": "{\r\n    \"method\": \"postComment\",\r\n    \"data\":\r\n    {\r\n        \"post_id\": \"60214f5199d4e49304e40bbd\",\r\n        \"comment_text\": \"hope to be #healthy and #successful\"\r\n    },\r\n    \"auth\": \"601fd3e09a55cf69633515c7\",\r\n    \"platform\": \"Android\",\r\n    \"lang_code\": \"EN\",\r\n    \"ver_api\": 1\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -265,14 +466,175 @@
 							}
 						},
 						"url": {
-							"raw": "{{url}}/instagram/reaction/600fbd3ea684af6cd4ab5ac1",
+							"raw": "{{url}}/main/instagram",
 							"host": [
 								"{{url}}"
 							],
 							"path": [
-								"instagram",
-								"reaction",
-								"600fbd3ea684af6cd4ab5ac1"
+								"main",
+								"instagram"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "unlike",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"method\": \"unlike\",\r\n    \"data\":\r\n    {\r\n        \"post_id\": \"60214749946165faf15772db\"\r\n    },\r\n    \"auth\": \"600d504d6d377aedf33b06d7\",\r\n    \"platform\": \"Android\",\r\n    \"lang_code\": \"EN\",\r\n    \"ver_api\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/main/instagram",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"main",
+								"instagram"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_page_post",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"method\": \"getPagePosts\",\r\n    \"data\":\r\n    {\r\n        \"profile_id\": \"60111f7b4c5fe363ef8a54b9\",\r\n        \"start_id\": null\r\n    },\r\n    \"auth\": \"600d504d6d377aedf33b06d7\",\r\n    \"platform\": \"Android\",\r\n    \"lang_code\": \"EN\",\r\n    \"ver_api\": 1\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/main/instagram",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"main",
+								"instagram"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_comments",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"method\": \"getComments\",\r\n    \"data\":\r\n    {\r\n        \"post_id\": \"60214f5199d4e49304e40bbd\",\r\n        \"start_id\": null\r\n    },\r\n    \"auth\": \"601fd3e09a55cf69633515c7\",\r\n    \"platform\": \"Android\",\r\n    \"lang_code\": \"EN\",\r\n    \"ver_api\": 1\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/main/instagram",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"main",
+								"instagram"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_likes",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"method\": \"getLikes\",\r\n    \"data\":\r\n    {\r\n        \"post_id\": \"60214749946165faf15772db\",\r\n        \"start_id\": null\r\n    },\r\n    \"auth\": \"601fd3e09a55cf69633515c7\",\r\n    \"platform\": \"Android\",\r\n    \"lang_code\": \"EN\",\r\n    \"ver_api\": 1\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/main/instagram",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"main",
+								"instagram"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search_tags",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"method\": \"searchTags\",\r\n    \"data\":\r\n    {\r\n        \"search_value\": \"fea\",\r\n        \"start_id\": \"600eaaa6ae21b636a7b521e3\"\r\n        \r\n    },\r\n    \"auth\": \"601fd3e09a55cf69633515c7\",\r\n    \"platform\": \"Android\",\r\n    \"lang_code\": \"EN\",\r\n    \"ver_api\": 1\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/main/instagram",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"main",
+								"instagram"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "search_account",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"method\": \"searchAccount\",\r\n    \"data\":\r\n    {\r\n        \"search_value\": \"parmid\",\r\n        \"start_id\": null\r\n    },\r\n    \"auth\": \"601fd3e09a55cf69633515c7\",\r\n    \"platform\": \"Android\",\r\n    \"lang_code\": \"EN\",\r\n    \"ver_api\": 1\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/main/instagram",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"main",
+								"instagram"
 							]
 						}
 					},

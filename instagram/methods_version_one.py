@@ -8,10 +8,12 @@ from pydantic import ValidationError
 from instagram.base_functions import get_profile, manage_response, create_profile, update_profile, create_post, \
     publish_on_home_page, get_home_page, post_comment, like_post, start_to_follow, stop_to_follow, get_followers, \
     get_followings, unlike_post, get_page_post, get_comments, get_likes, search_tags, search_account, \
-    determine_follow_request, get_applicant_users, delete_following, block_or_unblock_following, get_blocked_following
+    determine_follow_request, get_applicant_users, delete_following, block_or_unblock_following, get_blocked_following, \
+    delete_picture
 from instagram.out_models import OutputGeneral
 from instagram.serializers_input import ProfileValidator, PostValidator, CommentValidator, LikeValidator, \
-    FollowingRelationValidator, PagePostsValidator, SearchValidator, DetermineFollowRequest, DeleteFollowingValidator
+    FollowingRelationValidator, PagePostsValidator, SearchValidator, DetermineFollowRequest, DeleteFollowingValidator, \
+    DeletePictureValidator
 from instagram.serializers_output import ProfileSerializerVersionOne, PostSerializerVersion1, \
     EmbeddedPostSerializerVersionOne, EmbeddedUserSerializerVersionOne, EmbeddedCommentsSerializerVersionOne, \
     HomePageSerializerVersionOne, GetFollowingsSerializerVersionOne, ProfileFollowSerializerVersionOne, \
@@ -50,10 +52,11 @@ def create_profile_version_1(data):
         username = data.get("username")
         first_name = data.get("first_name")
         last_name = data.get("last_name")
-        # picture = data.get("picture")
+        picture = data.get("picture")
+        picture_id = data.get("picture_id")
         private = data.get("private")
 
-        output_profile_obj = create_profile(username, first_name, last_name, private)
+        output_profile_obj = create_profile(username, first_name, last_name, picture, picture_id, private)
         serializer = ProfileSerializerVersionOne(output_profile_obj)
         response = manage_response(status_info="ok",
                                    data={'profile': serializer.data})
@@ -74,10 +77,11 @@ def update_profile_version_1(profile_id, data):
         username = data.get("username")
         first_name = data.get("first_name")
         last_name = data.get("last_name")
-        # picture = data.get("picture")
+        picture = data.get("picture")
+        picture_id = data.get("picture_id")
         private = data.get("private")
 
-        profile_obj = update_profile(profile_id, username, first_name, last_name, private)
+        profile_obj = update_profile(profile_id, username, first_name, last_name, picture, picture_id, private)
         serializer = ProfileSerializerVersionOne(profile_obj)
         response = manage_response(status_info="ok",
                                    data={'profile': serializer.data})
@@ -96,6 +100,27 @@ def get_profile_version_1(profile_id):
         return response
     except Exception as e:
         logger.error("get_profile_version_1/method : " + str(e))
+        raise Exception(str(e))
+
+
+def delete_picture_version_1(data):
+    try:
+        DeletePictureValidator(**data)
+    except ValidationError as e:
+        logger.error("DeletePictureValidator/serializers_input : " + str(e))
+        response = manage_response(status_info="invalid",
+                                   data={})
+        return response
+
+    try:
+        image_id = data.get("image_id")
+
+        message = delete_picture(image_id)
+        response = manage_response(status_info="ok",
+                                   data={'message': message})
+        return response
+    except Exception as e:
+        logger.error("delete_picture_version_1/method : " + str(e))
         raise Exception(str(e))
 
 
@@ -311,7 +336,6 @@ def determine_follow_request_version_1(auth, data):
     return response
 
 
-# TODO: test this function and make the get_followers function correct
 def get_followers_version_1(auth, data):
     try:
         user_id = data.get("user_id")

@@ -1,3 +1,4 @@
+import os
 import time
 import logging
 
@@ -9,7 +10,7 @@ from LikeInstaProject import mongo_client_obj
 from LikeInstaProject.settings import per_page_limit
 from instagram.commons import pagination
 from instagram.tasks import remove_comments_of_blocked_user, remove_likes_of_blocked_user
-from instagram.models import Profile, Post, FollowingRelation, HomePage, Comment, Like, FollowRequest
+from instagram.models import Profile, Post, FollowingRelation, HomePage, Comment, Like, FollowRequest, UploadedImage
 from instagram.out_models import OutputPost, EmbeddedUser, EmbeddedPost, EmbeddedComment, OutputProfile, \
     OutputHomePage, OutputFollowers, OutputFollowings, OutputPagePost, OutputComment, OutputLike
 
@@ -62,12 +63,14 @@ def make_dict_embedded_comment(author_username, author_picture, comment_text, da
     return comment_dict
 
 
-def create_profile(username, first_name, last_name, private):
+def create_profile(username, first_name, last_name, picture, picture_id, private):
     try:
         data = {
             'username': username,
             'first_name': first_name,
             'last_name': last_name,
+            'picture': picture,
+            'picture_id': ObjectId(picture_id),
             'private': private,
             'date_of_join': time.time()
         }
@@ -80,14 +83,22 @@ def create_profile(username, first_name, last_name, private):
         raise Exception(str(e))
 
 
-def update_profile(profile_id, username, first_name, last_name, private):
+def update_profile(profile_id, username, first_name, last_name, picture, picture_id, private):
     try:
         data = {
             'username': username,
             'first_name': first_name,
             'last_name': last_name,
+            'picture': picture,
+            'picture_id': ObjectId(picture_id),
             'private': private
         }
+        old_profile_obj = mongo_client_obj.fetch_one_data(Profile,
+                                                          {'_id': ObjectId(profile_id)})
+        # delete previous picture
+        if old_profile_obj.picture_id != picture_id:
+            delete_picture(old_profile_obj.picture_id)
+        # update whole object
         profile_obj = mongo_client_obj.update_data(Profile,
                                                    {'_id': ObjectId(profile_id)},
                                                    {"$set": data},
@@ -108,6 +119,19 @@ def get_profile(profile_id):
         return output_profile_obj
     except Exception as e:
         logger.error("get_profile/base : " + str(e))
+        raise Exception(str(e))
+
+
+def delete_picture(image_id):
+    try:
+        image_obj = mongo_client_obj.fetch_one_data(UploadedImage,
+                                                    {'_id': ObjectId(image_id)})
+        os.remove(image_obj.image_address)
+        mongo_client_obj.delete_one_data(UploadedImage,
+                                         {'_id': ObjectId(image_id)})
+        return "deleted"
+    except Exception as e:
+        logger.error("delete_picture/base : " + str(e))
         raise Exception(str(e))
 
 

@@ -7,6 +7,7 @@ from mongoengine import *
 # PROFILE MODEL
 class Profile(Document):
     _id = ObjectIdField()
+    picture_id = ObjectIdField()
 
     username = StringField(required=True)
     first_name = StringField(required=False)
@@ -23,11 +24,10 @@ class Profile(Document):
     }
 
 
-class UploadPicture(Document):
+class UploadedImage(Document):
     _id = ObjectIdField()
-    profile_id = ObjectIdField()
 
-    image = ImageField()
+    image_address = StringField()
 
 
 class FollowRequest(Document):

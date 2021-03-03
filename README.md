@@ -1,6 +1,6 @@
-# Rubino
+# Disto
 
-> Similar to Facebook or Twitter, everyone who creates a Rubino account has a profile and a news feed. When you post a photo or video on Rubino, it displays on your profile. Other users who follow you see your posts in their feed. Likewise, you see posts from other users you follow.Like other social networks, you interact with other users on Ruboni by following them, being followed by them, commenting, liking, tagging etc.
+> Similar to Facebook or Twitter, everyone who creates a Disto account has a profile and a news feed. When you post a photo or video on Disto, it displays on your profile. Other users who follow you see your posts in their feed. Likewise, you see posts from other users you follow.Like other social networks, you interact with other users on Disto by following them, being followed by them, commenting, liking, tagging etc.
 
 ## Setup project locally
 
